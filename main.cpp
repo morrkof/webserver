@@ -7,17 +7,34 @@
 
 int main(int argc, char *argv[])
 {
+	//первоначально нужно будет распарсить конфиг, сейчас эти переменные захардкожены:
+	int temp_port = 80;
+
+	// создание сокета, PF_INET это семейство адресации TCP/IP, SOCK_STREAM это потоковый
+	// тип взаимодействия, 0 это протокол (не нужно выставлять, оно само определит)
 	int sock = socket(PF_INET, SOCK_STREAM, 0);
-	struct sockaddr_in name;
-	name.sin_family = PF_INET;
-	name.sin_port = (in_port_t)htons(80);
-	name.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(sock, (struct sockaddr *) &name, sizeof(name)) == -1)
+
+	// заполняем структуру с адресом, она нужна для привязки сокета (bind)
+	// sin_family - семейство адресации, то же что и выше (PF_INET)
+	// sin_port - short int с big_endian порядком (сетевой стандарт), в случае совпадения
+	// порядков с комплюктером - не сделает ничего
+	// sin_addr.s_addr - IP-адрес в формате unsigned int big_endian (система сама определит айпи)
+	struct sockaddr_in addr;
+	addr.sin_family = PF_INET;
+	addr.sin_port = htons(temp_port);
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	
+	// Снабжаем сокет адресом. В аргументах - фд сокета, заполненная структура, размер структуры
+	// Обязательна проверка на ошибки - т.к. часто сокет бывает занят/отсутствуют права
+	if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) == -1)
 	{
-		write(2, "Ошибка подключения", 36);
+		write(2, "Connection error", 17);
+		exit(1);
 	}
+
 	listen(sock, 10);
-	write(1, "Ожидание подключения", 40);
+	write(1, "Waiting for connect", 20);
 	while (1)
 	{
 		pid_t pid;
