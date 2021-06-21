@@ -3,23 +3,42 @@
 #include <sys/select.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 
-#define PORT 80
+#define PORT 8080
 
 int main()
 {
 	int listen_socket;
-	int client_socket;
-	long read_value;
-	struct sockaddr_in address;
+	int on = 1;
 
-	if (!(listen_socket = socket(AF_INET, SOCK_STREAM, 0)))
+	if (!(listen_socket = socket(PF_INET, SOCK_STREAM, 0)))
 	{
 		perror("socket");
 		exit(1);
 	}
+
+	int rc = setsockopt(listen_socket, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on));
+	if (rc < 0)
+	{
+		perror("setsockopt() failed");
+		close(listen_socket);
+		exit(-1);
+	}
+
+	struct sockaddr_in addr;
+	addr.sin_family = PF_INET;
+	addr.sin_port = htons(PORT);
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	if (bind(listen_socket, (struct sockaddr *) &addr, sizeof(addr)) == -1)
+	{
+		write(2, "Connection error\n", 18);
+		exit(1);
+	}
+	listen(listen_socket, 128);
+	std::cout << "Waiting for connect\n";
 
 	// fd_set fd_in, fd_out;
 	// // struct timeval tv;
@@ -27,30 +46,18 @@ int main()
 	// FD_ZERO(&fd_out);
 	// // 227-228 Столяров
 
-	// int sock = socket(AF_INET, SOCK_STREAM, 0);
-	// struct sockaddr_in addr;
-	// addr.sin_family = AF_INET;
-	// addr.sin_port = htons(temp_port);
-	// addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	// if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) == -1)
-	// {
-	// 	write(2, "Connection error", 17);
-	// 	exit(1);
-	// }
-	// listen(sock, 128);
-	// write(1, "Waiting for connect", 20);
-	// while (1)
-	// {
-	// 	struct sockaddr_storage client_addr;
-	// 	unsigned int address_size = sizeof(client_addr);
-	// 	// TODO:  добавить неблокирующий ввод, стримы и селект
-	// 	int conn = accept(sock, (struct sockaddr *) &client_addr, &address_size);
-	// 	char buf[50];
-	// 	int len = 50;
-	// 	recv(conn, buf, len, 0);
-	// 	send(conn, "HTTP/1.1 200 Ok \n<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
-	// 	write(1, buf, 50);
-	// 	close (conn);
-	// }
+	while (1)
+	{
+		struct sockaddr_storage client_addr;
+		unsigned int address_size = sizeof(client_addr);
+		// TODO:  добавить неблокирующий ввод, стримы и селект
+		int conn = accept(listen_socket, (struct sockaddr *) &client_addr, &address_size);
+		char buf[20000];
+		int len = 20000;
+		recv(conn, buf, len, 0);
+		std::cout << buf << std::endl;
+		send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
+		close (conn);
+	}
 	return 0;
 }
