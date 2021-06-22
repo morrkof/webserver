@@ -6,59 +6,108 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 #define PORT 8080
 
-int main()
+int	socket_init(int port)
 {
 	int listen_socket;
 	int on = 1;
+	sockaddr_in addr;
 
 	if (!(listen_socket = socket(PF_INET, SOCK_STREAM, 0)))
 	{
-		perror("socket");
-		exit(1);
+		std::cout << "socket() failed\n";
+		exit(-1);
 	}
 
 	int rc = setsockopt(listen_socket, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
 	{
-		perror("setsockopt() failed");
+		std::cout << "setsockopt() failed\n";
 		close(listen_socket);
 		exit(-1);
 	}
-
-	struct sockaddr_in addr;
 	addr.sin_family = PF_INET;
-	addr.sin_port = htons(PORT);
+	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(listen_socket, (struct sockaddr *) &addr, sizeof(addr)) == -1)
+	if (bind(listen_socket, (sockaddr *) &addr, sizeof(addr)) == -1)
 	{
-		write(2, "Connection error\n", 18);
-		exit(1);
+		std::cout << "bind() failed\n";
+		close(listen_socket);
+		exit(-1);
 	}
-	listen(listen_socket, 128);
+	if (listen(listen_socket, 128) == -1)
+	{
+		std::cout << "listen() failed\n";
+		close(listen_socket);
+		exit(-1);
+	}
+	return listen_socket;
+}
+
+int main()
+{
+	std::vector<int> sockets;
+	sockets.push_back(socket_init(PORT)); // TODO: цикл
+	sort(sockets.begin(), sockets.end());
 	std::cout << "Waiting for connect\n";
 
-	// fd_set fd_in, fd_out;
-	// // struct timeval tv;
-	// FD_ZERO(&fd_in);
-	// FD_ZERO(&fd_out);
+	fd_set fd_read, fd_write;
+	// timeval tv;
+	// tv.tv_sec = 10;
+	// tv.tv_usec = 0;
+	int ready_events;
+
 	// // 227-228 Столяров
 
 	while (1)
 	{
-		struct sockaddr_storage client_addr;
-		unsigned int address_size = sizeof(client_addr);
-		// TODO:  добавить неблокирующий ввод и селект
-		int conn = accept(listen_socket, (struct sockaddr *) &client_addr, &address_size);
-		char buf[20000];
-		int len = 20000;
-		recv(conn, buf, len, 0); // тут принимаем запрос в buf
-		std::cout << buf << std::endl;
-		// тут в send передаём ответ
-		send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
-		close (conn);
+		FD_ZERO(&fd_read);
+		FD_ZERO(&fd_write);
+		for (std::vector<int>::iterator it = sockets.begin(); it != sockets.end(); ++it)
+			FD_SET(*it, &fd_read);
+		// TODO: функция поиска максимального среди двух массивов
+		ready_events = select(sockets.back()+1, &fd_read, &fd_write, NULL, NULL);
+		if (ready_events < 0)
+		{
+			std::cout << "select() failed\n";
+			// close(listen_socket); // закрыть всё что в массивах
+			exit(-1);
+		}
+		else if (ready_events == 0)
+		{
+			std::cout << "select() timeout\n";
+			continue;
+		}
+		else
+		{
+			for (std::vector<int>::iterator it = sockets.begin(); it != sockets.end(); ++it)
+			{
+				if (FD_ISSET(*it, &fd_read))
+				{
+					sockaddr_storage client_addr;
+					unsigned int address_size = sizeof(client_addr);
+					int conn = accept(*it, (sockaddr *) &client_addr, &address_size);
+					// TODO: new Connection class добавить в массив коннекшонов
+					char buf[20000];
+					int len = 20000;
+					recv(conn, buf, len, 0); // тут принимаем запрос в buf
+					// buf не обнуляется
+					std::cout << buf << std::endl;
+					send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
+					close (conn);
+				}
+				if (FD_ISSET(*it, &fd_write))
+				{
+					// todo
+				}
+			}
+		}
+		
+		
 	}
 	return 0;
 }
