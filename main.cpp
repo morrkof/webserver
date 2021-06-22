@@ -1,43 +1,64 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/select.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 
+#define PORT 8080
 
-int main(int argc, char *argv[])
+int main()
 {
-	int sock = socket(PF_INET, SOCK_STREAM, 0);
-	struct sockaddr_in name;
-	name.sin_family = PF_INET;
-	name.sin_port = (in_port_t)htons(80);
-	name.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(sock, (struct sockaddr *) &name, sizeof(name)) == -1)
+	int listen_socket;
+	int on = 1;
+
+	if (!(listen_socket = socket(PF_INET, SOCK_STREAM, 0)))
 	{
-		write(2, "Ошибка подключения", 36);
+		perror("socket");
+		exit(1);
 	}
-	listen(sock, 10);
-	write(1, "Ожидание подключения", 40);
+
+	int rc = setsockopt(listen_socket, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on));
+	if (rc < 0)
+	{
+		perror("setsockopt() failed");
+		close(listen_socket);
+		exit(-1);
+	}
+
+	struct sockaddr_in addr;
+	addr.sin_family = PF_INET;
+	addr.sin_port = htons(PORT);
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	if (bind(listen_socket, (struct sockaddr *) &addr, sizeof(addr)) == -1)
+	{
+		write(2, "Connection error\n", 18);
+		exit(1);
+	}
+	listen(listen_socket, 128);
+	std::cout << "Waiting for connect\n";
+
+	// fd_set fd_in, fd_out;
+	// // struct timeval tv;
+	// FD_ZERO(&fd_in);
+	// FD_ZERO(&fd_out);
+	// // 227-228 Столяров
+
 	while (1)
 	{
-		pid_t pid;
 		struct sockaddr_storage client_addr;
 		unsigned int address_size = sizeof(client_addr);
-		int conn = accept(sock, (struct sockaddr *) &client_addr, &address_size);
-		char buf[50];
-		int len = 50;
-		int c = recv(conn, buf, len, 0);
-		send(conn, "PRIVET", strlen("PRIVET"), 0);
-		write(1, buf, 50);
+		// TODO:  добавить неблокирующий ввод и селект
+		int conn = accept(listen_socket, (struct sockaddr *) &client_addr, &address_size);
+		char buf[20000];
+		int len = 20000;
+		recv(conn, buf, len, 0); // тут принимаем запрос в buf
+		std::cout << buf << std::endl;
+		// тут в send передаём ответ
+		send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
 		close (conn);
-		// if ((pid = fork()) < 0) 
-		// 	close(sock);
-		// if (pid == 0)
-		// {
-		// 	
-		// 	close(conn);
-		// 	exit (0);
-		// }
 	}
 	return 0;
 }
