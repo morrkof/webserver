@@ -80,7 +80,7 @@ int		RequestParsing::fillMapHeaders() {
 		_dataNext = _dataNext.substr(_posNext, std::string::npos);
 		headerValue = _dataNext.substr(0, _dataNext.find("\n"));
 		_posNext = _dataNext.find("\n") + 1;
-		doubleNewline = _dataNext.find("\n\n") + 1;
+		doubleNewline = _dataNext.find("\r\n\r\n") + 1;
 		_mapHeaders[headerKey] = headerValue;
 
 		// std::cout << "headerKey:	" << headerKey << std::endl;
@@ -91,13 +91,17 @@ int		RequestParsing::fillMapHeaders() {
 	// for (std::map<std::string,std::string>::iterator it = _mapHeaders.begin(); it != _mapHeaders.end(); ++it)
 	// 	std::cout << it->first << ": " << it->second << '\n';
 
-	_posNext = _dataNext.find("\n\n") + 1;
+	_posNext = _dataNext.find("\r\n\r\n") + 1;
 	return 0;
 }
 
 int		RequestParsing::chooseBody() {
+	if (_mapHeaders.find("Content-Length") == _mapHeaders.end()) {
+		std::cout << "The body is not found" << std::endl;
+		return 0;
+	}
 	_dataNext = _dataNext.substr(_posNext + 1, std::string::npos);
-	size_t		doubleNewline = _dataNext.find("\n\n");
+	size_t		doubleNewline = _dataNext.find("\r\n\r\n");
 	_dataNext = _dataNext.substr(0, doubleNewline); // _dataNext now equals content
 	_body = _dataNext;
 	// std::cout << std::endl << "content" << std::endl;
@@ -121,11 +125,14 @@ int		RequestParsing::parseMeLikeYouDo() {
 }
 
 std::ostream&	operator<<(std::ostream	&out, RequestParsing &x) {
+	out << std::endl << "🍄 START:: show parsed data 🍄" << std::endl;
 	out << "Method:		" << x.getMethod() << std::endl;
 	out << "Location:	" << x.getLocation() << std::endl;
 	out << "Version:	" << x.getVersion() << std::endl;
 	for (std::map<std::string,std::string>::iterator it = x.getMapHeaders().begin(); it != x.getMapHeaders().end(); ++it)
 		std::cout << it->first << ":	" << it->second << '\n';
 	out << "Body:		" << x.getBody() << std::endl;
+	out << "🍄 END:: show parsed data 🍄" << std::endl << std::endl;
+
 	return (out);
 }
