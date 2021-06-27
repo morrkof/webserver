@@ -15,22 +15,22 @@
 #include "Config.hpp"
 #include "ConfigurationServer.hpp"
 
-class ConfigurationLocation
-{
-    private:
-        std::string         route;
-        ConfigurationServer server;
+// class ConfigurationLocation
+// {
+//     private:
+//         std::string         route;
+//         ConfigurationServer server;
         
-    public:
-        ConfigurationLocation();
-        virtual ~ConfigurationLocation();
-        ConfigurationLocation(const ConfigurationLocation &configLoc);
+//     public:
+//         ConfigurationLocation();
+//         virtual ~ConfigurationLocation();
+//         ConfigurationLocation(const ConfigurationLocation &configLoc);
 
-        ConfigurationLocation &operator=(const ConfigurationLocation &configLoc);
+//         ConfigurationLocation &operator=(const ConfigurationLocation &configLoc);
 
-        void    setRoute(std::string root);
-        void    setServer(ConfigurationServer server);
+//         void    setRoute(std::string root);
+//         void    setServer(ConfigurationServer server);
 
-        std::string getRoot();
-        ConfigurationServer getServer();
-};
+//         std::string getRoot();
+//         ConfigurationServer getServer();
+// };

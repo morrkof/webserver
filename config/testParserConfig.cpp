@@ -1,25 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Config.hpp                                         :+:      :+:    :+:   */
+/*   testParserConfig.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/06/05 15:02:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/26 20:30:58 by bbelen           ###   ########.fr       */
+/*   Created: 2021/06/26 20:10:20 by bbelen            #+#    #+#             */
+/*   Updated: 2021/06/26 20:11:45 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#include "ConfigurationFile.hpp"
 
-/**
- * Основной хэдер для всех конфигов и парсеров
- */
+int main(void)
+{
+	ConfigurationFile	parserFile;
 
-#include <string>
-#include <vector>
-#include <set>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iterator>
+	parserFile.parseFile("./configs/basic_config.conf");
+
+	return 0;
+}

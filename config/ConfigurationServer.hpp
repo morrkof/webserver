@@ -13,7 +13,6 @@
 #pragma once
 
 #include "Config.hpp"
-#include "ConfigurationLocation.hpp"
 
 typedef struct  s_listen
 {
@@ -21,13 +20,18 @@ typedef struct  s_listen
     int         port;
 }               t_listen;
 
+struct location
+{
+    std::string         route;
+};
+
 class ConfigurationServer
 {
     private:
         std::vector<t_listen>               listenVec;
         std::string                         root;
         std::vector<std::string>            serverNameVec;
-        std::vector<ConfigurationLocation>  locationVec;
+        std::vector<location>               locationVec;
         std::set<std::string>               methods;
         bool                                autoIndex;
     
@@ -41,10 +45,12 @@ class ConfigurationServer
         void    addListen(t_listen  listen);
         void    setRoot(std::string root);
         void    addServerName(std::string serverName);
-        void    addLocation(ConfigurationLocation location);
+        void    addLocation(location location);
         void    addMethod(std::string method);
         void    setAutoIndex(bool autoIndex);
 
         std::vector<t_listen>       getListenVec();
         std::vector<std::string>    getServerNameVec();
+
+        
 };

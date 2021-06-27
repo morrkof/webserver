@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:36:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/22 13:47:29 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/06/26 20:04:51 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include "Config.hpp"
 #include "ConfigurationServer.hpp"
+#include "MapConfigFile.hpp"
 
 class ConfigurationFile
 {

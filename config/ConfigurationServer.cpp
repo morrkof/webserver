@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigurationServer.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
+/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:52:16 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/05 15:52:16 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/06/26 20:21:34 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ void    ConfigurationServer::addServerName(std::string serverName)
     this->serverNameVec.push_back(serverName);
 }
 
-void    ConfigurationServer::addLocation(ConfigurationLocation location)
+void    ConfigurationServer::addLocation(location location)
 {
     this->locationVec.push_back(location);
 }
