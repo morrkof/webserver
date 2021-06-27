@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/27 18:18:58 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/06/27 19:55:36 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ ConfigurationFile &ConfigurationFile::operator=(const ConfigurationFile &file)
     return (*this);
 }
 
-void    ConfigurationFile::addServer(ConfigurationServer &server)
+void    ConfigurationFile::addServer(ConfigurationServer server)
 {
     this->serverVec.push_back(server);
 }
@@ -49,28 +49,28 @@ void    ConfigurationFile::parseFile(std::string filename)
     
     std::ifstream   config;
 
-    try
+    config.open(filename.c_str());
+    if (!(config.is_open()))
     {
-        config.open(filename);
+        // TODO: exception file not found
+        std::cout << "ERROR: config not found" << std::endl;
+        return;
     }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-    }
+    
 
     //std::stringstream   ss;
     std::string         line; 
     MapConfigFile       map;
     std::vector<std::string> blockBody;
     while (std::getline(config, line))
-    {
+    {        
         if (line[0] == '#' || line == "" || this->lineOnlySpacesOrTabs(line))
             continue;
 
-        line = std::regex_replace(line, std::regex("^ +| +$|( ) +"), "$1");
-        std::string::size_type begin = line.find_first_not_of("\t");
-        std::string::size_type end   = line.find_last_not_of("\t");
-        line = line.substr(begin, end-begin + 1);
+        // line = std::regex_replace(line, std::regex("^ +| +$|( ) +"), "$1");
+        // std::string::size_type begin = line.find_first_not_of("\t");
+        // std::string::size_type end   = line.find_last_not_of("\t");
+        // line = line.substr(begin, end-begin + 1);
         
         std::istringstream iss(line);
         std::vector<std::string> LineParts((std::istream_iterator<std::string>(iss)),
@@ -102,7 +102,7 @@ void    ConfigurationFile::parseFile(std::string filename)
 
 void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std::string> &block)
 {
-    std::cout << "--------Start check block" << std::endl;
+    //std::cout << "--------Start check block" << std::endl;
     if (!map.checkBrackets())
     {
         //TODO: exception brackets
@@ -113,14 +113,15 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
         //TODO: exception block name
         return ;
     }
-    std::cout << "--------Ok block OK brackets" << std::endl;
+    //std::cout << "--------Ok block OK brackets" << std::endl;
     
     std::vector<std::string>::iterator  it = block.begin();
     std::vector<std::string>::iterator  itEnd = block.end();
+    ConfigurationServer server;
 
     while (it != itEnd)
     {
-        std::cout << "line: " << *it << std::endl;
+        //std::cout << "line: " << *it << std::endl;
         std::istringstream iss(*it);
         std::vector<std::string> lineParts((std::istream_iterator<std::string>(iss)),
             std::istream_iterator<std::string>());
@@ -133,11 +134,13 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
         //поехал разбор строки
         if (map.getBlockName() == "server")
         {
-            ConfigurationServer server;
             this->parseBlockLine(lineParts, server);
         }
         it++;
     }
+
+    //std::cout << "Config block ready." << std::endl;
+    this->addServer(server);
 
 }
 

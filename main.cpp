@@ -7,8 +7,21 @@
 #include <stdlib.h>
 #include <iostream>
 #include "requestParsing.hpp"
+#include "config/ConfigurationFile.hpp"
 
 #define PORT 8080
+
+void	getConfig(std::string	fileName)
+{
+	ConfigurationFile	configParser;
+
+	configParser.parseFile(fileName);
+	std::vector<ConfigurationServer> servers = configParser.getServers();
+	std::cout << "Got servers: " << servers.size() << std::endl;
+	std::cout << "-------root: " << servers[0].getRoot() << std::endl;
+	std::cout << "server_name: " << *(servers[0].getServerNameVec().begin()) << std::endl;
+	std::cout << "-----listen: " << servers[0].getListenVec().begin()->port << std::endl;
+}
 
 int main()
 {
@@ -29,6 +42,16 @@ int main()
 		exit(-1);
 	}
 
+	/**
+	 * Config set
+	 */
+
+	getConfig("basic.conf");
+
+	/**
+	 * end config set
+	 */
+
 	struct sockaddr_in addr;
 	addr.sin_family = PF_INET;
 	addr.sin_port = htons(PORT);
@@ -47,21 +70,21 @@ int main()
 	// FD_ZERO(&fd_out);
 	// // 227-228 Столяров
 
-	while (1)
-	{
-		struct sockaddr_storage client_addr;
-		unsigned int address_size = sizeof(client_addr);
-		// TODO:  добавить неблокирующий ввод и селект
-		int conn = accept(listen_socket, (struct sockaddr *) &client_addr, &address_size);
-		char buf[20000];
-		int len = 20000;
-		recv(conn, buf, len, 0); // тут принимаем запрос в buf
-		RequestParsing	ex1(buf); // added by bjebedia: creting a class to store data
-		std::cout << ex1; // added by bjebedia: print data
-		std::cout << buf << std::endl;
-		// тут в send передаём ответ
-		send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
-		close (conn);
-	}
+	// while (1)
+	// {
+	// 	struct sockaddr_storage client_addr;
+	// 	unsigned int address_size = sizeof(client_addr);
+	// 	// TODO:  добавить неблокирующий ввод и селект
+	// 	int conn = accept(listen_socket, (struct sockaddr *) &client_addr, &address_size);
+	// 	char buf[20000];
+	// 	int len = 20000;
+	// 	recv(conn, buf, len, 0); // тут принимаем запрос в buf
+	// 	RequestParsing	ex1(buf); // added by bjebedia: creting a class to store data
+	// 	std::cout << ex1; // added by bjebedia: print data
+	// 	std::cout << buf << std::endl;
+	// 	// тут в send передаём ответ
+	// 	send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
+	// 	close (conn);
+	// }
 	return 0;
 }

@@ -14,11 +14,11 @@
 
 #include "Config.hpp"
 
-struct  listen
+typedef struct  s_listen
 {
     //int         host;
     int         port;
-};
+}       t_listen;
 
 struct location
 {
@@ -35,11 +35,12 @@ struct returnAddress
 class ConfigurationServer
 {
     private:
-        std::vector<listen>                 listenVec;
+        std::vector<t_listen>                 listenVec;
         std::string                         root;
         std::vector<std::string>            serverNameVec;
         std::vector<location>               locationVec;
         std::set<std::string>               methods;
+        std::vector<std::string>            indexVec;
         bool                                autoIndex;
         returnAddress                       returnAddr;
     
@@ -50,16 +51,22 @@ class ConfigurationServer
 
         ConfigurationServer &operator=(const ConfigurationServer &config);
 
-        void    addListen(listen  listen);
+        void    addListen(t_listen  listen);
         void    setRoot(std::string root);
         void    addServerName(std::string serverName);
         void    addLocation(location location);
         void    addMethod(std::string method);
         void    setAutoIndex(bool autoIndex);
         void    addReturnAddress(returnAddress returnAddr);
+        void    addIndex(std::string index);
 
-        std::vector<listen>       getListenVec();
+        std::vector<t_listen>         getListenVec();
         std::vector<std::string>    getServerNameVec();
+        std::string                 getRoot();
+        std::vector<location>       getLocationVec();
+        std::set<std::string>       getMethods();
+        std::vector<std::string>    getIndexVec();
+        returnAddress               getReturnAddress();
 
         void    parseListen(std::vector<std::string> &line);
         void    parseServerName(std::vector<std::string> &line);

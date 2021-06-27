@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:02:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/27 16:47:55 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/06/27 19:33:10 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,4 +23,4 @@
 #include <fstream>
 #include <sstream>
 #include <iterator>
-#include <regex>
+#include <cstdlib>
