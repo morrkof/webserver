@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include "requestParsing.hpp"
 
 #define PORT 8080
 
@@ -55,6 +56,8 @@ int main()
 		char buf[20000];
 		int len = 20000;
 		recv(conn, buf, len, 0); // тут принимаем запрос в buf
+		RequestParsing	ex1(buf); // added by bjebedia: creting a class to store data
+		std::cout << ex1; // added by bjebedia: print data
 		std::cout << buf << std::endl;
 		// тут в send передаём ответ
 		send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
