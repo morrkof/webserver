@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/26 19:38:19 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/26 20:13:18 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/06/27 17:47:02 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,4 +38,6 @@ class MapConfigFile
 		std::string	getBlockName();
 
 		bool		checkBrackets();
+		bool		checkBlockName();
+		
 };

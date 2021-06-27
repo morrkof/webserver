@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/26 19:45:39 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/26 19:55:11 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/06/27 17:46:50 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,4 +77,13 @@ std::string	MapConfigFile::getBlockName()
 bool		MapConfigFile::checkBrackets()
 {
 	return this->bracketOpen == this->bracketClose;
+}
+
+bool		MapConfigFile::checkBlockName()
+{
+	if (this->blockName == "server")
+	{
+		return true;
+	}
+	return false;
 }
