@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 #include <map>
-//t
+
 class RequestParsing {
 private:
 	std::string							_method;
