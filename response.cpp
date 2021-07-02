@@ -11,8 +11,11 @@ Response	&Response::operator=(Response const &equal_op) {
 }
 
 std::string	Response::generateResponse() {
-//	"HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
-	_response = _parsedReq.getVersion();// + " " + _code + " \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ";
+//	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
+	_response.append(_version); // HTTP/1.1
+	_response.append(" ");
+	_response.append(_code); // 200 Ok
+	_response.append(" \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ");
 	_responseLen = _response.length();
 	return _response;
 }

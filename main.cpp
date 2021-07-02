@@ -25,7 +25,7 @@ int	socket_init(int port)
 		exit(-1);
 	}
 
-	int rc = setsockopt(listen_socket, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on));
+	int rc = setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
 	{
 		std::cout << "setsockopt() failed\n";
@@ -99,11 +99,13 @@ int main()
 					recv(conn, buf, len, 0); // тут принимаем запрос в buf
 					RequestParsing	req1(buf); // added by bjebedia: creting a class to store data
 					std::cout << req1; // added by bjebedia: print data
-					Response		resp1("200 Ok", req1); // added by bjebedia: creating a response class (might not work for now)
+					Response		resp1("200 Ok", req1); // added by bjebedia: creating a response class
 					std::cout << resp1;
 					// buf не обнуляется
 					std::cout << buf << std::endl;
-					send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
+					// pure classless send:
+//					send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
+					send(conn, (resp1.getResponse()).c_str(), resp1.getResponseLen(), 0); // added by bjebedia: same but using reponse class
 					close (conn);
 				}
 				if (FD_ISSET(*it, &fd_write))
