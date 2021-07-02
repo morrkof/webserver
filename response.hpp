@@ -9,12 +9,13 @@
 class Response {
 private:
 	std::string							_response;
+	std::string							_code;
 	size_t								_responseLen;
 	RequestParsing						_parsedReq;
 
 public:
-	Response(std::string code, RequestParsing req): _response(code), _parsedReq(req) {};
-	Response(Response const &copy) {*this = copy; return;};
+	Response(std::string code, RequestParsing req): _response(""), _code(code), _responseLen(0), _parsedReq(req) {};
+	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response		&operator=(Response const &equal_op);
 	std::string		getResponse() const {return _response;}

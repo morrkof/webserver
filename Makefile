@@ -1,5 +1,5 @@
 NAME = webserv
-SRC = ./main.cpp ./requestParsing.cpp
+SRC = ./main.cpp ./requestParsing.cpp ./response.cpp
 OBJ = $(SRC:.cpp=.o)
 CFLAGS = -Wall -Wextra -Werror -std=c++98
 
