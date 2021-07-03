@@ -97,9 +97,9 @@ int main()
 					char buf[20000];
 					int len = 20000;
 					recv(conn, buf, len, 0); // тут принимаем запрос в buf
-					RequestParsing	req1(buf); // added by bjebedia: creting a class to store data
+					RequestParsing		req1(buf); // added by bjebedia: creting a class to store data
 					std::cout << req1; // added by bjebedia: print data
-					Response		resp1("200 Ok", req1); // added by bjebedia: creating a response class
+					Response			resp1("200 Ok", req1); // added by bjebedia: creating a response class
 					std::cout << resp1;
 					// buf не обнуляется
 					std::cout << buf << std::endl;

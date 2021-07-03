@@ -2,12 +2,30 @@
 
 Response	&Response::operator=(Response const &equal_op) {
 	if (this != &equal_op) {
-		this->_code = equal_op._code;
-		this->_parsedReq = equal_op._parsedReq;
 		this->_response = equal_op._response;
+		this->_body = equal_op._body;
+		this->_code = equal_op._code;
+		this->_version = equal_op._version;
 		this->_responseLen = equal_op._responseLen;
+		this->_parsedReq = equal_op._parsedReq;
 	}
 	return (*this);
+}
+
+int		Response::generateBody() {
+	std::ifstream	ifs("sites/error404.html");
+	std::string		buf;
+	if (ifs.is_open() == 0) {
+		std::cout << "file doesn't exist" << std::endl;
+		return 1;
+	}
+	while (!ifs.eof()) {
+		std::getline(ifs, buf);
+		_body.append(buf);
+		_body.append("\n");
+	}
+	// std::cout << _body << std::endl;
+	return 0;
 }
 
 std::string	Response::generateResponse() {
@@ -16,6 +34,7 @@ std::string	Response::generateResponse() {
 	_response.append(" ");
 	_response.append(_code); // 200 Ok
 	_response.append(" \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ");
+	// _response.append(_body);
 	_responseLen = _response.length();
 	return _response;
 }
