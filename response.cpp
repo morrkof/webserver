@@ -13,16 +13,20 @@ Response	&Response::operator=(Response const &equal_op) {
 }
 
 int		Response::generateBody() {
-	std::ifstream	ifs("sites/error404.html");
-	std::string		buf;
-	if (ifs.is_open() == 0) {
-		std::cout << "file doesn't exist" << std::endl;
-		return 1;
-	}
-	while (!ifs.eof()) {
-		std::getline(ifs, buf);
-		_body.append(buf);
-		_body.append("\n");
+	if (_parsedReq.getLocation() == "/")			// if location exists
+		_body = "<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html>";
+	else {											// error 404
+		std::ifstream	ifs("sites/error404.html");
+		std::string		buf;
+		if (ifs.is_open() == 0) {
+			std::cout << "file doesn't exist" << std::endl;
+			return 1;
+		}
+		while (!ifs.eof()) {
+			std::getline(ifs, buf);
+			_body.append(buf);
+			_body.append("\n");
+		}
 	}
 	// std::cout << _body << std::endl;
 	return 0;
@@ -30,11 +34,13 @@ int		Response::generateBody() {
 
 std::string	Response::generateResponse() {
 //	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
+	generateBody();
 	_response.append(_version); // HTTP/1.1
 	_response.append(" ");
 	_response.append(_code); // 200 Ok
-	_response.append(" \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ");
-	// _response.append(_body);
+	// _response.append(" \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ");
+	_response.append(" \n\n ");
+	_response.append(_body);
 	_responseLen = _response.length();
 	return _response;
 }
