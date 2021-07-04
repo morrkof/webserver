@@ -5,33 +5,43 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <iostream>
 #include "requestParsing.hpp"
 #include "response.hpp"
+#include "Websocket.hpp"
+#include <list>
 #include <vector>
+#include <set>
 #include <algorithm>
+#include <errno.h>
 
-#define PORT 3000
+#define PORT 8080 // это ждём из конфига
 
+/* создаём слушающие сокеты в этой функции */
 int	socket_init(int port)
 {
 	int listen_socket;
 	int on = 1;
 	sockaddr_in addr;
 
+	/* открываем сокет и присваиваем его в listen_socket */
 	if (!(listen_socket = socket(PF_INET, SOCK_STREAM, 0)))
 	{
 		std::cout << "socket() failed\n";
 		exit(-1);
 	}
-
-	int rc = setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
+	/* делаем наш сокет реюзабельным, для повторного использования без кулдауна */
+	int rc = setsockopt(listen_socket, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
 	{
 		std::cout << "setsockopt() failed\n";
 		close(listen_socket);
 		exit(-1);
 	}
+	/* делаем наш сокет неблокирующим, чтоб процесс не вис тут, если клиент не отвечает */
+	fcntl(listen_socket, F_SETFL, O_NONBLOCK);
+	/* подготавливаем стандартную структуру с настройками порта и привязываем сокет к порту */
 	addr.sin_family = PF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -41,6 +51,7 @@ int	socket_init(int port)
 		close(listen_socket);
 		exit(-1);
 	}
+	/* выставляем наш сокет в слушающий режим, он готов принимать соединения */
 	if (listen(listen_socket, 128) == -1)
 	{
 		std::cout << "listen() failed\n";
@@ -52,65 +63,93 @@ int	socket_init(int port)
 
 int main()
 {
-	std::vector<int> sockets;
-	sockets.push_back(socket_init(PORT)); // TODO: цикл
-	sort(sockets.begin(), sockets.end());
-	std::cout << "Waiting for connect\n";
+	/* инициализируем сокеты и создаём массив слушающих сокетов на всех доступных портах  */
+	std::list<Websocket *> sockets;
+	Websocket *s = new Websocket(socket_init(PORT), LISTEN); // TODO: массив портов и цикл по ним
+	sockets.push_back(s);
+	std::cout << "🦄 Waiting for connect\n";
 
+	/* переменные для селекта */
 	fd_set fd_read, fd_write;
-	// timeval tv;
-	// tv.tv_sec = 10;
-	// tv.tv_usec = 0;
 	int ready_events;
-
-	// // 227-228 Столяров
-
 	while (1)
 	{
+		/* удаляем закрытые на прошлом проходе сокеты и очищаем наборы тех, где ловим события */
+		sockets.remove(NULL);
 		FD_ZERO(&fd_read);
 		FD_ZERO(&fd_write);
-		for (std::vector<int>::iterator it = sockets.begin(); it != sockets.end(); ++it)
-			FD_SET(*it, &fd_read);
-		// TODO: функция поиска максимального среди двух массивов
-		ready_events = select(sockets.back()+1, &fd_read, &fd_write, NULL, NULL);
+		/* проходим по всем сокетам и добавляем их в наборы для ловли событий */
+		for (std::list<Websocket *>::iterator it = sockets.begin(); it != sockets.end(); ++it)
+		{
+			if ((*it)->getType() == WRITE)
+				FD_SET((*it)->getSocket(), &fd_write);
+			else
+				FD_SET((*it)->getSocket(), &fd_read);
+		}
+		/* сортируем, так как селект принимает максимальный + 1 */
+		sockets.sort(compare_ws);
+		/* непосредственно, селект. возвращает количество готовых событий */
+		ready_events = select((*(sockets.rbegin()))->getSocket() + 1, &fd_read, &fd_write, NULL, NULL);
+		/* если вернул < 0 = ошибка, всё зачищаем и закрываем и выходим */
 		if (ready_events < 0)
 		{
-			std::cout << "select() failed\n";
-			// close(listen_socket); // закрыть всё что в массивах
+			int err = errno;
+			std::cout << "select() failed. Error " << err << " " << strerror(err) << std::endl;
+			for (std::list<Websocket *>::iterator it = sockets.begin(); it != sockets.end(); ++it)
+				delete (*it);
+			sockets.clear();
 			exit(-1);
 		}
+		/* вернул 0 - таймаут, запустить по второму кругу */
 		else if (ready_events == 0)
 		{
 			std::cout << "select() timeout\n";
 			continue;
 		}
+		/* вернул > 0 = идём смотреть, что за события нам поймались */
 		else
 		{
-			for (std::vector<int>::iterator it = sockets.begin(); it != sockets.end(); ++it)
+			/* заводим счётчик отработанных событий и перебираем все наши сокеты */
+			int done = 0;
+			for (std::list<Websocket *>::iterator it = sockets.begin(); it != sockets.end() && done < ready_events; ++it)
 			{
-				if (FD_ISSET(*it, &fd_read))
+				/* если сработал сокет на чтение */
+				if (FD_ISSET((*it)->getSocket(), &fd_read))
 				{
-					sockaddr_storage client_addr;
-					unsigned int address_size = sizeof(client_addr);
-					int conn = accept(*it, (sockaddr *) &client_addr, &address_size);
-					// TODO: new Connection class добавить в массив коннекшонов
-					char buf[20000];
-					int len = 20000;
-					recv(conn, buf, len, 0); // тут принимаем запрос в buf
-					RequestParsing		req1(buf); // added by bjebedia: creting a class to store data
-					std::cout << req1; // added by bjebedia: print data
-					Response			resp1("200 Ok", req1); // added by bjebedia: creating a response class
-					std::cout << resp1;
-					// buf не обнуляется
-					std::cout << buf << std::endl;
-					// pure classless send:
-//					send(conn, "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> ", strlen("HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "), 0);
-					send(conn, (resp1.getResponse()).c_str(), resp1.getResponseLen(), 0); // added by bjebedia: same but using reponse class
-					close (conn);
+					/* если это слушающий сокет, то "считывать" будем запрос на соединение */
+					if ((*it)->getType() == LISTEN)
+					{
+						/* готовим структуру, принимаем соединение, появляется новый сокет для данных, добавляем его в общий массив с пометкой READ */
+						sockaddr_storage client_addr;
+						unsigned int address_size = sizeof(client_addr);
+						int conn = accept((*it)->getSocket(), (sockaddr *) &client_addr, &address_size);
+						Websocket *s = new Websocket(conn, READ);
+						sockets.push_back(s);
+					}
+					/* если это сокет данных, то читаем запрос и формируем ответ, внутри класса пометка READ превратится во WRITE */
+					else
+					{
+						int len = 20000; // TODO брать этот размер из конфига
+						char buf[len];
+						memset(buf, 0, len);
+						recv((*it)->getSocket(), buf, len, 0);
+						(*it)->setRequest(buf);
+						std::cout << buf << std::endl; /* тут печать реквеста ДО парсинга */
+						std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
+					}
+					/* удаляем обработанный сокет из селектового набора на чтение */
+					FD_CLR((*it)->getSocket(),&fd_read);
+					++done;
 				}
-				if (FD_ISSET(*it, &fd_write))
+				/* если сработал сокет на запись */
+				else if (FD_ISSET((*it)->getSocket(), &fd_write))
 				{
-					// todo
+					/* отправляем сформированный ответ и удаляем обработанный сокет */
+					send((*it)->getSocket(), ((*it)->getResponseChars()).c_str(), (*it)->getResponseLen(), 0);
+					FD_CLR((*it)->getSocket(),&fd_write);
+					++done;
+					delete (*it);
+					*it = NULL;
 				}
 			}
 		}

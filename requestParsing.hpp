@@ -18,9 +18,10 @@ private:
 	size_t								_posNext;			// shows the place of iterator for the next argument
 
 public:
-	RequestParsing(std::string str): _dataFull(str) {parseMeLikeYouDo();};
-	RequestParsing(RequestParsing const &copy) {*this = copy; return;};
-	~RequestParsing() {};
+	RequestParsing(std::string str): _dataFull(str) {parseMeLikeYouDo();}
+	RequestParsing(RequestParsing const &copy) {*this = copy; return;}
+	~RequestParsing() {}
+	RequestParsing() {}
 	RequestParsing	&operator=(RequestParsing const &equal_op);
 	std::string		getMethod() const;
 	std::string		getLocation() const;
@@ -29,7 +30,7 @@ public:
 	std::string		getBody() const;
 
 private:
-	RequestParsing();
+	
 	int			parseMeLikeYouDo();
 	void		_errorMethodDoesntExist();
 	int			chooseMethod();

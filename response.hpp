@@ -16,6 +16,7 @@ public:
 	Response(std::string code, RequestParsing req): _response("") ,_body(""), _code(code), _version(req.getVersion()), _responseLen(0), _parsedReq(req) {generateResponse();};
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
+	Response() {}
 	Response		&operator=(Response const &equal_op);
 	std::string		getResponse() const {return _response;}
 	std::string		getBody() const {return _body;}
@@ -23,8 +24,6 @@ public:
 	int				generateBody();
 	std::string		generateResponse();
 
-private:
-	Response();
 };
 
 std::ostream &operator<<(std::ostream &out, Response &x);
