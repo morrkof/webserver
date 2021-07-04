@@ -57,7 +57,7 @@ int		RequestParsing::chooseLocation() {
 
 int		RequestParsing::chooseVersion() {
 	_dataNext = _dataNext.substr(_posNext, std::string::npos);
-	_version = _dataNext.substr(0, _dataNext.find("\n"));
+	_version = _dataNext.substr(0, _dataNext.find("\n")-1);
 	_posNext = _dataNext.find("\n") + 1; // _posNext now is the symbol of the first header
 
 	// std::cout << std::endl << "chooseVersion" << std::endl;
