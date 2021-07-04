@@ -11,7 +11,7 @@
 #include <vector>
 #include <algorithm>
 
-#define PORT 8080
+#define PORT 3000
 
 int	socket_init(int port)
 {
