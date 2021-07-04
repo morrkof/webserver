@@ -21,26 +21,21 @@ private:
 	Response _response;
 
 public:
-	Websocket(int socket, socket_type type)
-	: _socket(socket), _type(type) {}
-	~Websocket() { close(_socket);}
+	Websocket(int socket, socket_type type);
+	~Websocket();
+	Websocket();
 
-	int getSocket(void) const { return _socket; }
-	socket_type getType(void) const { return _type; }
-	RequestParsing &getRequest() { return _request; }
-	std::string getResponseChars() { return _response.getResponse();}
-	size_t getResponseLen() { return _response.getResponseLen(); }
+	int getSocket(void) const;
+	socket_type getType(void) const;
+	RequestParsing &getRequest();
+	Response &getResponse();
+	std::string getResponseChars();
+	size_t getResponseLen();
 
-	void setType(socket_type type) { _type = type; }
-	void setRequest(std::string buf) { _type = WRITE; _request = RequestParsing(buf); _response = Response("200 Ok", _request); }
-
-
-	
+	void setType(socket_type type);
+	void setRequest(std::string buf);
 };
 
-bool compare_ws(Websocket *lhs, Websocket *rhs)
-{
-	return (lhs->getSocket() < rhs->getSocket());
-}
+bool compare_ws(Websocket *lhs, Websocket *rhs);
 
 #endif
