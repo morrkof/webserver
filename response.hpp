@@ -1,6 +1,6 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
-#include <fstream>      // std::ifstream
+#include <fstream>		// std::ifstream
 #include <stdlib.h>
 #include <vector>
 #include "requestParsing.hpp"
@@ -12,12 +12,10 @@ private:
 	std::string							_code;
 	std::string							_version;
 	size_t								_responseLen;
-	size_t								_picLen;
 	RequestParsing						_parsedReq;
 
-
 public:
-	Response(std::string code, RequestParsing req): _response("") ,_body(""), _code(code), _version(req.getVersion()), _responseLen(0), _parsedReq(req) {generateResponse();};
+	Response(std::string code, RequestParsing req): _response("") ,_body(""), _code(code), _version(req.getVersion()), _responseLen(0), _parsedReq(req) {parseResponse();};
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response() {}
@@ -25,9 +23,10 @@ public:
 	std::string		getResponse() const {return _response;}
 	std::string		getBody() const {return _body;}
 	size_t			getResponseLen() const {return _responseLen;}
+	// std::string		generateBodyFile(std::string source);
 	int				generateBody();
-	std::string		generateResponse();
-	std::string getFileStr(std::string source);
+	std::string		generateResponse(std::string x);
+	std::string		parseResponse();
 
 };
 

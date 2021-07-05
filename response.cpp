@@ -13,21 +13,21 @@ Response	&Response::operator=(Response const &equal_op) {
 }
 
 int		Response::generateBody() {
-	if (_parsedReq.getLocation() == "/")						// if location exists
+	if (_parsedReq.getLocation() == "/")						// root
 		_body = "<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html>";
 	else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
-		std::ifstream	ifs("sites/unicorn.jpg");
-		std::string		buf;
-		_picLen = 10;
-		if (ifs.is_open() == 0) {
-			std::cout << "file doesn't exist" << std::endl;
-			return 1;
+		std::string		line;
+		std::string		source("unicorn.jpg");
+		std::ifstream	ifs(source.c_str(), std::ios::binary);
+		if (!ifs) {
+		std::cout << "Error: cannot open this file" << std::endl;
+		exit (1);
 		}
-		while (!ifs.eof()) {
-			std::getline(ifs, buf);
-			_body.append(buf);
-			_body.append("\n");
-			_picLen = _picLen + _body.length();
+		while (getline(ifs, line)) {
+		_body += line;
+		if (ifs.eof())
+			break;
+		_body += "\n";
 		}
 		ifs.close();
 	}
@@ -49,28 +49,24 @@ int		Response::generateBody() {
 	return 0;
 }
 
-std::string	Response::generateResponse() {
+std::string	Response::generateResponse(std::string x) {
 //	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
-	if (_parsedReq.getLocation() == "/unicorn.jpg") {
-		_body = getFileStr("unicorn.jpg"); // не разобралась где тут делается тело, сделала свою функцию (переделай по-своему)
-		_response.append(_version); // HTTP/1.1
+		_response.append(_version);		// HTTP/1.1
 		_response.append(" ");
-		_response.append(_code); // 200 Ok
-		_response.append("Content-Type: image/jpeg\n"); // обязательное, без него пытается скачать
-		// _response.append("Content-Length: 13887\n"); // не обязательное
-		// _response.append("Content-Transfer-Encoding: binary\n"); // не обязательное
-		_response.append("\n"); // один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
+		_response.append(_code);		// 200 Ok
+		_response.append(x);			// обязательное, без него пытается скачать
+		_response.append("\n\n");		// один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
 		_response.append(_body);
 		_responseLen = _response.length();
-	}
-	else
+	return _response;
+}
+
+std::string	Response::parseResponse() {
 	generateBody();
-	_response.append(_version); // HTTP/1.1
-	_response.append(" ");
-	_response.append(_code); // 200 Ok
-	_response.append(" \n\n ");
-	_response.append(_body);
-	_responseLen = _response.length();
+	if (_parsedReq.getLocation() == "/unicorn.jpg")
+		generateResponse("Content-Type: image/jpeg");
+	else
+	generateResponse("");
 	return _response;
 }
 
@@ -79,24 +75,4 @@ std::ostream&	operator<<(std::ostream	&out, Response &x) {
 	out << x.getResponse() << std::endl;
 	out << "🌠 END:: show response 🌠" << std::endl << std::endl;
 	return (out);
-}
-
-std::string Response::getFileStr(std::string source) // моя функция, переделать по своему и удалить, из hpp тоже удалить
-{
-	std::string result;
-	std::ifstream ifs(source.c_str(), std::ios::binary);
-	if (!ifs) {
-		std::cout << "Error: cannot open this file" << std::endl;
-		exit (1);
-	}
-
-	std::string line;
-	while (getline(ifs, line)) {
-		result += line;
-		if (ifs.eof())
-			break;
-		result += "\n";
-	}
-	ifs.close();
-	return result;
 }
