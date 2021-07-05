@@ -1,6 +1,8 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 #include <fstream>      // std::ifstream
+#include <stdlib.h>
+#include <vector>
 #include "requestParsing.hpp"
 
 class Response {
@@ -25,6 +27,7 @@ public:
 	size_t			getResponseLen() const {return _responseLen;}
 	int				generateBody();
 	std::string		generateResponse();
+	std::string getFileStr(std::string source);
 
 };
 

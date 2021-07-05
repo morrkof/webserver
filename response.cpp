@@ -61,10 +61,14 @@ std::string	Response::generateResponse() {
 		_responseLen = _response.length();
 	}
 	else
+	_body = getFileStr("unicorn.jpg"); // не разобралась где тут делается тело, сделала свою функцию (переделай по-своему)
 	_response.append(_version); // HTTP/1.1
 	_response.append(" ");
 	_response.append(_code); // 200 Ok
-	_response.append(" \n\n ");
+	_response.append("Content-Type: image/jpeg\n"); // обязательное, без него пытается скачать
+	// _response.append("Content-Length: 13887\n"); // не обязательное
+	// _response.append("Content-Transfer-Encoding: binary\n"); // не обязательное
+	_response.append("\n"); // один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
 	_response.append(_body);
 	_responseLen = _response.length();
 	return _response;
@@ -75,4 +79,24 @@ std::ostream&	operator<<(std::ostream	&out, Response &x) {
 	out << x.getResponse() << std::endl;
 	out << "🌠 END:: show response 🌠" << std::endl << std::endl;
 	return (out);
+}
+
+std::string Response::getFileStr(std::string source) // моя функция, переделать по своему и удалить, из hpp тоже удалить
+{
+	std::string result;
+	std::ifstream ifs(source.c_str(), std::ios::binary);
+	if (!ifs) {
+		std::cout << "Error: cannot open this file" << std::endl;
+		exit (1);
+	}
+
+	std::string line;
+	while (getline(ifs, line)) {
+		result += line;
+		if (ifs.eof())
+			break;
+		result += "\n";
+	}
+	ifs.close();
+	return result;
 }
