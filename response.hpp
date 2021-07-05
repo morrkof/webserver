@@ -10,7 +10,9 @@ private:
 	std::string							_code;
 	std::string							_version;
 	size_t								_responseLen;
+	size_t								_picLen;
 	RequestParsing						_parsedReq;
+
 
 public:
 	Response(std::string code, RequestParsing req): _response("") ,_body(""), _code(code), _version(req.getVersion()), _responseLen(0), _parsedReq(req) {generateResponse();};

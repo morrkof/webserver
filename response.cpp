@@ -15,9 +15,10 @@ Response	&Response::operator=(Response const &equal_op) {
 int		Response::generateBody() {
 	if (_parsedReq.getLocation() == "/")						// if location exists
 		_body = "<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html>";
-	else if (_parsedReq.getLocation() == "/unicorn.gif") {		// error 404 asks for its unicorn
-		std::ifstream	ifs("sites/unicorn.gif");
+	else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
+		std::ifstream	ifs("sites/unicorn.jpg");
 		std::string		buf;
+		_picLen = 10;
 		if (ifs.is_open() == 0) {
 			std::cout << "file doesn't exist" << std::endl;
 			return 1;
@@ -26,6 +27,7 @@ int		Response::generateBody() {
 			std::getline(ifs, buf);
 			_body.append(buf);
 			_body.append("\n");
+			_picLen = _picLen + _body.length();
 		}
 		ifs.close();
 	}
@@ -50,6 +52,15 @@ int		Response::generateBody() {
 std::string	Response::generateResponse() {
 //	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
 	generateBody();
+	if (_parsedReq.getLocation() == "/unicorn.jpg") {
+		_response.append(_version);
+		_response.append(" ");
+		_response.append(_code);
+		_response.append(" \n\n ");
+		_response.append(_body, _picLen);
+		_responseLen = _response.length();
+	}
+	else
 	_response.append(_version); // HTTP/1.1
 	_response.append(" ");
 	_response.append(_code); // 200 Ok
