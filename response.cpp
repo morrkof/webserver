@@ -51,24 +51,24 @@ int		Response::generateBody() {
 
 std::string	Response::generateResponse() {
 //	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
-	generateBody();
 	if (_parsedReq.getLocation() == "/unicorn.jpg") {
-		_response.append(_version);
+		_body = getFileStr("unicorn.jpg"); // не разобралась где тут делается тело, сделала свою функцию (переделай по-своему)
+		_response.append(_version); // HTTP/1.1
 		_response.append(" ");
-		_response.append(_code);
-		_response.append(" \n\n ");
-		_response.append(_body, _picLen);
+		_response.append(_code); // 200 Ok
+		_response.append("Content-Type: image/jpeg\n"); // обязательное, без него пытается скачать
+		// _response.append("Content-Length: 13887\n"); // не обязательное
+		// _response.append("Content-Transfer-Encoding: binary\n"); // не обязательное
+		_response.append("\n"); // один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
+		_response.append(_body);
 		_responseLen = _response.length();
 	}
 	else
-	_body = getFileStr("unicorn.jpg"); // не разобралась где тут делается тело, сделала свою функцию (переделай по-своему)
+	generateBody();
 	_response.append(_version); // HTTP/1.1
 	_response.append(" ");
 	_response.append(_code); // 200 Ok
-	_response.append("Content-Type: image/jpeg\n"); // обязательное, без него пытается скачать
-	// _response.append("Content-Length: 13887\n"); // не обязательное
-	// _response.append("Content-Transfer-Encoding: binary\n"); // не обязательное
-	_response.append("\n"); // один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
+	_response.append(" \n\n ");
 	_response.append(_body);
 	_responseLen = _response.length();
 	return _response;
