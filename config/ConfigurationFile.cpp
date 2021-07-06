@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/27 19:55:36 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/06 09:42:56 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,9 +52,7 @@ void    ConfigurationFile::parseFile(std::string filename)
     config.open(filename.c_str());
     if (!(config.is_open()))
     {
-        // TODO: exception file not found
-        std::cout << "ERROR: config not found" << std::endl;
-        return;
+        throw ConfigurationFile::ConfigFileNotFoundException();
     }
     
 
@@ -105,13 +103,11 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     //std::cout << "--------Start check block" << std::endl;
     if (!map.checkBrackets())
     {
-        //TODO: exception brackets
-        return ;
+        throw ConfigurationFile::ConfigFileParserException();
     }
     if (!map.checkBlockName())
     {
-        //TODO: exception block name
-        return ;
+        throw ConfigurationFile::ConfigFileParserException();
     }
     //std::cout << "--------Ok block OK brackets" << std::endl;
     
@@ -177,7 +173,17 @@ void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, Configu
     else
     {
         std::cout << "Error config line: |" << line[0] << "|" << std::endl;
-        //TODO exception error config wrong line
+        throw ConfigurationFile::ConfigFileParserException();
     }
     
+}
+
+const char* ConfigurationFile::ConfigFileNotFoundException::what() const throw()
+{
+    return ("ConfigFileException: file not found\n");
+}
+
+const char* ConfigurationFile::ConfigFileParserException::what() const throw()
+{
+    return ("ConfigFileException: syntax error\n");
 }

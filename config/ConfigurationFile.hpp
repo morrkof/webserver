@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:36:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/27 19:08:23 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/06 09:40:25 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,4 +36,18 @@ class ConfigurationFile
 
     private:
         bool                                lineOnlySpacesOrTabs(std::string line);
+    
+    public:
+        class ConfigFileNotFoundException : public std::exception
+        {
+            public:
+                virtual const char* what() const throw();
+        };
+
+        class ConfigFileParserException : public std::exception
+        {
+            public:
+                virtual const char* what() const throw();
+        };
+
 };

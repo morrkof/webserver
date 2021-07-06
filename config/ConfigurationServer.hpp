@@ -75,5 +75,27 @@ class ConfigurationServer
         void    parseLocation(std::vector<std::string> &line);
         void    parseReturn(std::vector<std::string> &line);
 
-        
+        class ServerParserException : public std::exception
+        {
+            public:
+                virtual const char* what() const throw();
+        };
+
+        class ServerPortException : public std::exception
+        {
+            public:
+                virtual const char* what() const throw();
+        };
+
+        class ServerNameException : public std::exception
+        {
+            public:
+                virtual const char* what() const throw();
+        };
+
+        class ServerIndexException : public std::exception
+        {
+            public:
+                virtual const char* what() const throw();
+        };
 };

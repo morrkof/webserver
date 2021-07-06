@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:52:16 by bbelen            #+#    #+#             */
-/*   Updated: 2021/06/27 19:54:59 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/06 09:53:53 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,11 @@ returnAddress               ConfigurationServer::getReturnAddress()
 void    ConfigurationServer::parseListen(std::vector<std::string> &line)
 {
     t_listen  currentListen;
-    //TODO: add check that port is ok, limits and if is number at all
+    int possiblePort = std::atoi(line[1].c_str());
+    if (possiblePort < 1 || possiblePort > 65535)
+    {
+        throw ConfigurationServer::ServerPortException();
+    }
     currentListen.port = std::atoi(line[1].c_str());
     this->addListen(currentListen);
     //std::cout << "---------Success listen: " << currentListen.port << std::endl;
@@ -129,8 +133,7 @@ void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
 {
     if (line.size() == 1)
     {
-        //throw exception no server names
-        //std::cout << "------no server names" << std::endl;
+        throw ConfigurationServer::ServerNameException();
     }
     for (unsigned long i = 1; i < line.size(); i++)
     {
@@ -146,8 +149,7 @@ void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
             }
             else
             {
-                std::cout << "ERROR: no ';' at the end of the line" << std::endl;
-                //TODO: error syntax exception
+                throw ConfigurationServer::ServerParserException();
             }
         }
         this->addServerName(line[i]);
@@ -169,8 +171,7 @@ void    ConfigurationServer::parseRoot(std::vector<std::string> &line)
     }
     else
     {
-        //TODO: syntax exception
-        std::cout << "ERROR: wrong root line" << std::endl;
+        throw ConfigurationServer::ServerParserException();
     }
     //std::cout << "---------Success root: " << this->root << std::endl;
 }
@@ -179,8 +180,7 @@ void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
 {
     if (line.size() == 1)
     {
-        //throw exception no server names
-        std::cout << "------no indeces" << std::endl;
+        throw ConfigurationServer::ServerIndexException();
     }
     for (unsigned long i = 1; i < line.size(); i++)
     {
@@ -196,8 +196,7 @@ void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
             }
             else
             {
-                std::cout << "ERROR: no ';' at the end of the line" << std::endl;
-                //TODO: error syntax exception
+                throw ConfigurationServer::ServerParserException();
             }
         }
         this->addIndex(line[i]);
@@ -223,8 +222,27 @@ void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
     }
     else
     {
-        //TODO: syntax exception
-        std::cout << "ERROR: wrong return line" << std::endl;
+        throw ConfigurationServer::ServerParserException();
     }
     //std::cout << "---------Success return: " << this->returnAddr.errorCode << std::endl;
+}
+
+const char* ConfigurationServer::ServerParserException::what() const throw()
+{
+    return ("ServerParserException: syntax error\n");
+}
+
+const char* ConfigurationServer::ServerPortException::what() const throw()
+{
+    return ("ServerPortException: port number out of bounds\n");
+}
+
+const char* ConfigurationServer::ServerNameException::what() const throw()
+{
+    return ("ServerNameException: no server name\n");
+}
+
+const char* ConfigurationServer::ServerIndexException::what() const throw()
+{
+    return ("ServerNameException: no index pages\n");
 }
