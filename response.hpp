@@ -15,7 +15,7 @@ private:
 	RequestParsing						_parsedReq;
 
 public:
-	Response(std::string code, RequestParsing req): _response("") ,_body(""), _code(code), _version(req.getVersion()), _responseLen(0), _parsedReq(req) {parseResponse();};
+	Response(RequestParsing req): _response("") ,_body(""), _code("200 ok"), _version(req.getVersion()), _responseLen(0), _parsedReq(req) {parseResponse();};
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response() {}

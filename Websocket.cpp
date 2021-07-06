@@ -16,7 +16,7 @@ void Websocket::setRequest(std::string buf)
 { 
 	_type = WRITE; 
 	_request = RequestParsing(buf); 
-	_response = Response("200 Ok", _request); 
+	_response = Response(_request); 
 }
 
 bool compare_ws(Websocket *lhs, Websocket *rhs)

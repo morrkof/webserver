@@ -13,13 +13,17 @@ Response	&Response::operator=(Response const &equal_op) {
 }
 
 int		Response::generateBody() {
-	if (_parsedReq.getLocation() == "/")						// root
+	if (_parsedReq.getLocation() == "/") {						// root
+		_code = "200 ok";
 		_body = "<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html>";
+	}
 	else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
+		_code = "200 ok";
 		std::string		line;
-		std::string		source("unicorn.jpg");
+		std::string		source("sites/unicorn.jpg");
 		std::ifstream	ifs(source.c_str(), std::ios::binary);
 		if (!ifs) {
+		_code = "404 Not Found";
 		std::cout << "Error: cannot open this file" << std::endl;
 		exit (1);
 		}
@@ -32,6 +36,7 @@ int		Response::generateBody() {
 		ifs.close();
 	}
 	else {														// error 404
+		_code = "404 Not Found";
 		std::ifstream	ifs("sites/error404.html");
 		std::string		buf;
 		if (ifs.is_open() == 0) {
