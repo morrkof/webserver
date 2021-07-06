@@ -43,12 +43,11 @@ std::string	Response::generateContentType() {
 	return _contentType;
 }
 
-int			Response::generateBody() {
-	if (_parsedReq.getLocation() == "/") {						// root
-		_errCode = "200 ok";
-		std::ifstream	ifs("sites/static/index.html");
-		std::string		buf;
-		if (ifs.is_open() == 0) {
+int			Response::generateBody(const char* streamPath, std::string errCode) {
+	std::string		buf;
+	std::ifstream	ifs(streamPath);
+	_errCode = errCode;
+	if (ifs.is_open() == 0) {
 			std::cout << "file doesn't exist" << std::endl;
 			return 1;
 		}
@@ -57,61 +56,27 @@ int			Response::generateBody() {
 			_body.append(buf);
 			_body.append("\n");
 		}
-		ifs.close();
-		// _body = "<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html>";
+	ifs.close();
+	return 0;
+}
+
+int			Response::parseBody() {
+	if (_parsedReq.getLocation() == "/") {						// root
+		if (generateBody("sites/static/index.html", "200 ok") == 1)
+			return 1;
 	}
 	else if (_parsedReq.getLocation() == "/root_unicorn.jpg") {		// error 404 asks for its unicorn
-		_errCode = "200 ok";
-		std::string		line;
-		std::string		source("sites/pics/root_unicorn.jpg");
-		std::ifstream	ifs(source.c_str(), std::ios::binary);
-		if (!ifs) {
-			_errCode = "404 Not Found";
-			std::cout << "Error: cannot open this file" << std::endl;
+		if (generateBody("sites/pics/root_unicorn.jpg", "200 ok") == 1)
 			return 1;
-		}
-		while (getline(ifs, line)) {
-			_body += line;
-			if (ifs.eof())
-				break;
-			_body += "\n";
-		}
-		ifs.close();
 	}
 	else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
-		_errCode = "200 ok";
-		std::string		line;
-		std::string		source("sites/pics/unicorn.jpg");
-		std::ifstream	ifs(source.c_str(), std::ios::binary);
-		if (!ifs) {
-			_errCode = "404 Not Found";
-			std::cout << "Error: cannot open this file" << std::endl;
+		if (generateBody("sites/pics/unicorn.jpg", "200 ok") == 1)
 			return 1;
-		}
-		while (getline(ifs, line)) {
-			_body += line;
-			if (ifs.eof())
-				break;
-			_body += "\n";
-		}
-		ifs.close();
 	}
 	else {														// error 404
-		_errCode = "404 Not Found";
-		std::ifstream	ifs("sites/error404.html");
-		std::string		buf;
-		if (ifs.is_open() == 0) {
-			std::cout << "file doesn't exist" << std::endl;
+		if (generateBody("sites/error404.html", "404 Not Found") == 1)
 			return 1;
-		}
-		while (!ifs.eof()) {
-			std::getline(ifs, buf);
-			_body.append(buf);
-			_body.append("\n");
-		}
-		ifs.close();
 	}
-	// std::cout << _body << std::endl;
 	return 0;
 }
 
@@ -130,7 +95,7 @@ std::string	Response::generateResponse() {
 }
 
 std::string	Response::parseResponse() {
-	generateBody();
+	parseBody();
 	generateContentType();
 	if (_parsedReq.getLocation() == "/unicorn.jpg")
 		generateResponse();

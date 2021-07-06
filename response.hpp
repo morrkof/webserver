@@ -27,7 +27,8 @@ public:
 	std::string		getBody() const {return _body;}
 	size_t			getResponseLen() const {return _responseLen;}
 	std::string		generateContentType();
-	int				generateBody();
+	int				generateBody(const char* streamPath, std::string errCode);
+	int				parseBody();
 	std::string		generateResponse();
 	std::string		parseResponse();
 
