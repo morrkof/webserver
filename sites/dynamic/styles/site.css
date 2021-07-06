@@ -1,0 +1,312 @@
+@font-face {
+    font-family: Huntsman;
+    src: url('../fonts/Huntsman.otf');
+}
+
+@font-face {
+    font-family: Exo;
+    src: url('../fonts/Exo.otf');
+}
+
+@font-face {
+    font-family: "Open Sans";
+    src: url('../fonts/OpenSans.ttf');
+}
+
+body, html {
+    padding: 0;
+    margin: 0;
+    color: #5e5e5e;
+    font-family: "Open Sans", sans-serif;
+}
+
+header {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: url('../images/promo.jpg') no-repeat;
+    background-size: 100%;
+}
+
+#headerInside {
+    width: 1100px;
+    margin: 0 auto;
+}
+
+#logo {
+    width: 50px;
+    height: 50px;
+    float: left;
+    background: url('../images/origami-logo.svg') no-repeat;
+    background-size: contain;
+}
+
+#companyName {
+    text-align: right;
+    font-family: Huntsman, sans-serif;
+    float: left;
+    margin-left: 15px;
+    font-size: 1.3em;
+    line-height: 50px;
+    color: #fff;
+}
+
+#navWrap {
+    height: 50px;
+    float: right;
+    display: flex;
+    align-items: center;
+	flex-direction: row;
+}
+
+#navWrap a {
+    display: block;
+    font-family: "Open Sans", sans-serif;
+    color: #fff;
+    text-decoration: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0 20px;
+    height: 70px;
+    line-height: 70px;
+}
+
+#navWrap a:hover {
+    background: #5e5e5e;
+}
+
+#navWrap a:last-child {
+    border-left: none;
+}
+
+#content {
+    min-height: 600px;
+    width: 1100px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+footer {
+    float: left;
+    width: 100%;
+    height: 300px;
+    background: url('../images/footerback.png');
+    color: #fff;
+}
+
+#footerInside {
+    position: relative;
+    width: 1100px;
+    margin: 0 auto;
+    height: 100%;
+}
+
+#copyrights {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+#social {
+    padding-top: 20px;
+    width: 100%;
+    height: 40px;
+    position: absolute;
+    bottom: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.socialItem {
+    width: 40px;
+    height: 40px;
+    margin: 0 5px;
+}
+
+#contacts {
+    position: absolute;
+    left: 0;
+    top: 20px;
+    width: 340px;
+}
+
+.contactWrap {
+    float: left;
+    width: 100%;
+    margin-bottom: 10px;
+    line-height: 40px;
+}
+
+.contactIcon {
+    width: 40px;
+    height: 40px;
+    float: left;
+    margin-right: 10px;
+}
+
+#footerNav {
+    position: absolute;
+    right: 0;
+    top: 45px;
+    width: 200px;
+}
+
+#footerNav a {
+    display: block;
+    text-align: right;
+    color: #e6e09a;
+    margin-bottom: 10px;
+    text-decoration: none;
+}
+
+#footerNav a:hover {
+    color: #fff;
+}
+
+/* -------------------- НАЧАЛО стилей для главной страницы --------------------- */
+
+#promo {
+    background: url('../images/promo.jpg') no-repeat;
+    width: 100%;
+    height: 600px;
+    background-size: cover;
+    margin-top: -71px;
+    float: left;
+}
+
+#promoText {
+    float: left;
+    width: 100%;
+    text-align: center;
+    margin-top: 100px;
+    color: #fff;
+    font-family: Exo, sans-serif;
+    font-size: 2em;
+    word-spacing: 8px;
+}
+
+#mainTextWrap {
+    width: 100%;
+    float: left;
+}
+
+#mainText {
+    width: 1100px;
+    margin: 40px auto;
+    text-align: justify;
+}
+
+@media all and (min-width: 1500px) {
+    #promo {
+        height: 800px;
+    }
+}
+
+/* ----------------- КОНЕЦ стилей для главной страницы ---------------------- */
+
+/* ------------------ НАЧАЛО стилей для главной страницы магазниа ---------------------- */
+
+#shopWrap {
+    width: 100%;
+    float: left;
+}
+
+.shopUnit {
+    float: left;
+    width: 28%;
+    padding: 5px;
+    border: 1px solid rgba(225, 225, 225, 0.7);
+    margin-right: 6.365%;
+    margin-bottom: 20px;
+}
+
+.shopUnit:nth-child(3n) {
+    margin-right: 0;
+}
+
+.shopUnitName {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+    font-family: Exo, sans-serif;
+    font-size: 1.2em;
+}
+
+.shopUnit img {
+    width: 100%;
+    height: 231px;
+}
+
+.shopUnitShortDesc {
+    text-align: justify;
+    margin-top: 10px;
+}
+
+.shopUnitPrice {
+    text-align: right;
+    padding-right: 20px;
+    margin-top: 10px;
+    color: #6a6747;
+    font-weight: bold;
+}
+
+.shopUnitMore {
+    border: none;
+    padding: 5px 15px;
+    background-color: #696969;
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    color: #e6e09a;
+    text-decoration: none;
+}
+
+.shopUnitMore:hover {
+    color: #fff;
+    background-color: #777777;
+}
+
+/* ------------------ КОНЕЦ стилей для главной старницы магазина -------------------------- */
+
+/* ---------------- НАЧАЛО стилей для страницы с открытым товаром ----------------------- */
+
+#openedProduct-img {
+    float: left;
+    width: 30%;
+    margin-right: 3%;
+}
+
+#openedProduct-img img {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid rgba(225, 225, 225, 0.7);
+}
+
+#openedProduct-content {
+    float: left;
+    width: 67%;
+}
+
+#openedProduct-name {
+    font-family: Exo, sans-serif;
+    font-size: 2em;
+    margin-top: 0;
+}
+
+#openedProduct-desc {
+    margin-top: 20px;
+}
+
+#openedProduct-price {
+    margin-top: 10px;
+    color: #6a6747;
+    font-weight: bold;
+}
+
+/* ---------------- КОНЕЦ стилей для страниы с открытым товаром -------------------------- */
+
