@@ -146,6 +146,7 @@ int main()
 						sockaddr_storage client_addr;
 						unsigned int address_size = sizeof(client_addr);
 						int conn = accept((*it)->getSocket(), (sockaddr *) &client_addr, &address_size);
+						fcntl(conn, F_SETFL, O_NONBLOCK);
 						Websocket *s = new Websocket(conn, READ);
 						sockets.push_back(s);
 					}
