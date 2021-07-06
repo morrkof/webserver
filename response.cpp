@@ -60,10 +60,28 @@ int			Response::generateBody() {
 		ifs.close();
 		// _body = "<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html>";
 	}
+	else if (_parsedReq.getLocation() == "/root_unicorn.jpg") {		// error 404 asks for its unicorn
+		_errCode = "200 ok";
+		std::string		line;
+		std::string		source("sites/pics/root_unicorn.jpg");
+		std::ifstream	ifs(source.c_str(), std::ios::binary);
+		if (!ifs) {
+			_errCode = "404 Not Found";
+			std::cout << "Error: cannot open this file" << std::endl;
+			return 1;
+		}
+		while (getline(ifs, line)) {
+			_body += line;
+			if (ifs.eof())
+				break;
+			_body += "\n";
+		}
+		ifs.close();
+	}
 	else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
 		_errCode = "200 ok";
 		std::string		line;
-		std::string		source("sites/unicorn.jpg");
+		std::string		source("sites/pics/unicorn.jpg");
 		std::ifstream	ifs(source.c_str(), std::ios::binary);
 		if (!ifs) {
 			_errCode = "404 Not Found";
