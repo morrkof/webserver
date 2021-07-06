@@ -15,15 +15,27 @@
 #include <set>
 #include <algorithm>
 #include <errno.h>
+#include "config/ConfigurationFile.hpp"
 
 #define PORT 8080 // это ждём из конфига
+
+void	getConfig(std::string	fileName)
+{
+	ConfigurationFile	configParser;
+
+	configParser.parseFile(fileName);
+	std::vector<ConfigurationServer> servers = configParser.getServers();
+	std::cout << "Got servers: " << servers.size() << std::endl;
+	std::cout << "-------root: " << servers[0].getRoot() << std::endl;
+	std::cout << "server_name: " << *(servers[0].getServerNameVec().begin()) << std::endl;
+	std::cout << "-----listen: " << servers[0].getListenVec().begin()->port << std::endl;
+}
 
 /* создаём слушающие сокеты в этой функции */
 int	socket_init(int port)
 {
 	int listen_socket;
 	int on = 1;
-	sockaddr_in addr;
 
 	/* открываем сокет и присваиваем его в listen_socket */
 	if (!(listen_socket = socket(PF_INET, SOCK_STREAM, 0)))
@@ -42,6 +54,7 @@ int	socket_init(int port)
 	/* делаем наш сокет неблокирующим, чтоб процесс не вис тут, если клиент не отвечает */
 	fcntl(listen_socket, F_SETFL, O_NONBLOCK);
 	/* подготавливаем стандартную структуру с настройками порта и привязываем сокет к порту */
+	struct sockaddr_in addr;
 	addr.sin_family = PF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -63,6 +76,16 @@ int	socket_init(int port)
 
 int main()
 {
+		/**
+	 * Config set
+	 */
+
+	getConfig("basic.conf");
+
+	/**
+	 * end config set
+	 */
+
 	/* инициализируем сокеты и создаём массив слушающих сокетов на всех доступных портах  */
 	std::list<Websocket *> sockets;
 	Websocket *s = new Websocket(socket_init(PORT), LISTEN); // TODO: массив портов и цикл по ним
