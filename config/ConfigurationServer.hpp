@@ -22,7 +22,11 @@ typedef struct  s_listen
 
 struct location
 {
-    std::string         route;
+    std::string                 route;
+    bool                        autoindex;
+    std::vector<std::string>    try_files;
+    bool                        finished;
+    int                         errorCode;
 };
 
 struct returnAddress
@@ -64,6 +68,7 @@ class ConfigurationServer
         std::vector<std::string>    getServerNameVec();
         std::string                 getRoot();
         std::vector<location>       getLocationVec();
+        location&                   getLastLocation();
         std::set<std::string>       getMethods();
         std::vector<std::string>    getIndexVec();
         returnAddress               getReturnAddress();
@@ -74,6 +79,7 @@ class ConfigurationServer
         void    parseIndex(std::vector<std::string> &line);
         void    parseLocation(std::vector<std::string> &line);
         void    parseReturn(std::vector<std::string> &line);
+        void    updateLocation(std::vector<std::string> &line);
 
         class ServerParserException : public std::exception
         {
@@ -99,3 +105,5 @@ class ConfigurationServer
                 virtual const char* what() const throw();
         };
 };
+
+std::ostream &operator<<(std::ostream &os, ConfigurationServer &server);

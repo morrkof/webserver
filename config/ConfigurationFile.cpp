@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/06 09:42:56 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/06 11:17:38 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,6 @@ void    ConfigurationFile::parseFile(std::string filename)
         throw ConfigurationFile::ConfigFileNotFoundException();
     }
     
-
-    //std::stringstream   ss;
     std::string         line; 
     MapConfigFile       map;
     std::vector<std::string> blockBody;
@@ -64,12 +62,8 @@ void    ConfigurationFile::parseFile(std::string filename)
     {        
         if (line[0] == '#' || line == "" || this->lineOnlySpacesOrTabs(line))
             continue;
-
-        // line = std::regex_replace(line, std::regex("^ +| +$|( ) +"), "$1");
-        // std::string::size_type begin = line.find_first_not_of("\t");
-        // std::string::size_type end   = line.find_last_not_of("\t");
-        // line = line.substr(begin, end-begin + 1);
         
+        // std::cout << "line: " << line << std::endl;
         std::istringstream iss(line);
         std::vector<std::string> LineParts((std::istream_iterator<std::string>(iss)),
             std::istream_iterator<std::string>());
@@ -77,6 +71,11 @@ void    ConfigurationFile::parseFile(std::string filename)
         {
             map.addBracketOpen(1);
             map.setBlockName(LineParts[0]);
+        }
+        else if (LineParts.size() > 1 && LineParts[LineParts.size() - 1] == "{")
+        {
+            map.addBracketOpen(1);
+            blockBody.push_back(line);
         }
         else if (LineParts[0] == "}")
         {
@@ -94,13 +93,13 @@ void    ConfigurationFile::parseFile(std::string filename)
             blockBody.push_back(line);
         }
     }
-    std::cout << "--------finished reading config" << std::endl;
+    // std::cout << "--------finished reading config" << std::endl;
     config.close();
 }
 
 void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std::string> &block)
 {
-    //std::cout << "--------Start check block" << std::endl;
+    // std::cout << "--------Start check block" << std::endl;
     if (!map.checkBrackets())
     {
         throw ConfigurationFile::ConfigFileParserException();
@@ -117,17 +116,9 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
 
     while (it != itEnd)
     {
-        //std::cout << "line: " << *it << std::endl;
         std::istringstream iss(*it);
         std::vector<std::string> lineParts((std::istream_iterator<std::string>(iss)),
             std::istream_iterator<std::string>());
-        // for (int i = 0; i < lineParts.size(); i++)
-        // {
-        //     //поехал разбор строки
-        //     std::cout << "Part: " << lineParts[i] << std::endl;
-        // }
-
-        //поехал разбор строки
         if (map.getBlockName() == "server")
         {
             this->parseBlockLine(lineParts, server);
@@ -158,6 +149,7 @@ bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
 
 void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, ConfigurationServer &server)
 {
+    // std::cout << "line: " << line[0] << std::endl; 
     if (line[0] == "listen")
         server.parseListen(line);
     else if (line[0] == "server_name")
@@ -170,6 +162,12 @@ void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, Configu
         server.parseLocation(line);
     else if (line[0] == "return")
         server.parseReturn(line);
+    else if (line[0] == "autoindex" && server.getLastLocation().finished == false)
+        server.updateLocation(line);
+    else if (line[0] == "try_files" && server.getLastLocation().finished == false)
+        server.updateLocation(line);
+    else if (line[0] == "}" && server.getLastLocation().finished == false)
+        server.getLastLocation().finished = true;
     else
     {
         std::cout << "Error config line: |" << line[0] << "|" << std::endl;

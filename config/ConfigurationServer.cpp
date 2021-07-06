@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:52:16 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/06 09:53:53 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/06 11:17:22 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,8 +206,74 @@ void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
 
 void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
 {
-    //TODO: finish
-    std::cout << "line is: " << line[0] << std::endl;
+    if (line.size() == 3)
+    {
+        location newLocation;
+
+        newLocation.route = line[1];
+        if (line[2] != "{")
+            throw ConfigurationServer::ServerParserException();
+        newLocation.finished = false;
+        this->addLocation(newLocation); 
+        // std::cout << "location added: " << this->getLocationVec().size() << std::endl;
+    }
+    else
+    {
+        throw ConfigurationServer::ServerParserException();
+    }
+}
+
+location&   ConfigurationServer::getLastLocation()
+{
+    return (this->locationVec.back());
+}
+
+void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
+{
+    location &lastLocation = this->getLastLocation();
+    if (line[0] == "autoindex")
+    {
+        if (line[1] == "on" && line[2] == ";")
+            lastLocation.autoindex = true;
+        else if (line[1] == "on;")
+            lastLocation.autoindex = true;
+        else if (line[1] == "off" && line[2] == ";")
+            lastLocation.autoindex = false;
+        else if (line[1] == "off;")
+            lastLocation.autoindex = false;
+        else
+            throw ConfigurationServer::ServerParserException();
+    }
+    else if (line[0] == "try_files")
+    {
+        for (unsigned long i = 1; i < line.size(); i++)
+        {
+            if (i + 1 == line.size())
+            {
+                // ';' может быть через пробел, тогда просто игнорируем, если приклеена
+                // то обрезаем, иначе - ошибка синтаксиса, ибо ';'должна быть
+                if (line[i] == ";")
+                    break;
+                else if (line[i][line[i].size() - 1] == ';' && line[i][0] == '=')
+                {
+                    line[i].assign(line[i].begin() + 1, line[i].end() - 1);
+                    int errorCode = std::atoi(line[i].c_str());
+                    if (errorCode > 0)
+                    {
+                        lastLocation.errorCode = errorCode;
+                    }
+                    else
+                        throw ConfigurationServer::ServerParserException();
+                    break;
+                }
+                else
+                {
+                    throw ConfigurationServer::ServerParserException();
+                }
+            }
+            lastLocation.try_files.push_back(line[1]);
+        }
+    }
 }
 
 void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
@@ -245,4 +311,32 @@ const char* ConfigurationServer::ServerNameException::what() const throw()
 const char* ConfigurationServer::ServerIndexException::what() const throw()
 {
     return ("ServerNameException: no index pages\n");
+}
+
+std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
+{
+	os << "----Server name: ";
+    std::vector<std::string> serverNames = server.getServerNameVec();
+    for (unsigned long i = 0; i < serverNames.size(); i++)
+    {
+        os << serverNames[i] << " ";
+    }
+    os << std::endl;
+    os << "Root: " << server.getRoot() << std::endl;
+    os << "Ports: ";
+    std::vector<t_listen> listenVec = server.getListenVec();
+    for (unsigned long i = 0; i < listenVec.size(); i++)
+    {
+        os << listenVec[i].port << " ";
+    }
+    os << std::endl;
+    os << "Locations: " << std::endl;
+    std::vector<location> locationVec = server.getLocationVec();
+    for (unsigned long i = 0; i < locationVec.size(); i++)
+    {
+        os << locationVec[i].route << " " << locationVec[i].errorCode << " ";
+    }
+    os << std::endl;
+	
+	return (os);
 }

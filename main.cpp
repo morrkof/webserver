@@ -23,12 +23,14 @@ void	getConfig(std::string	fileName)
 {
 	ConfigurationFile	configParser;
 
+	std::cout << "Start parse config" << std::endl;
 	configParser.parseFile(fileName);
+	std::cout << "Finish parse config" << std::endl;
 	std::vector<ConfigurationServer> servers = configParser.getServers();
-	std::cout << "Got servers: " << servers.size() << std::endl;
-	std::cout << "-------root: " << servers[0].getRoot() << std::endl;
-	std::cout << "server_name: " << *(servers[0].getServerNameVec().begin()) << std::endl;
-	std::cout << "-----listen: " << servers[0].getListenVec().begin()->port << std::endl;
+	for (unsigned long i = 0; i < servers.size(); i++)
+	{
+		std::cout << servers[i];
+	}
 }
 
 /* создаём слушающие сокеты в этой функции */
