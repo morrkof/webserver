@@ -46,7 +46,19 @@ std::string	Response::generateContentType() {
 int			Response::generateBody() {
 	if (_parsedReq.getLocation() == "/") {						// root
 		_errCode = "200 ok";
-		_body = "<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html>";
+		std::ifstream	ifs("sites/static/index.html");
+		std::string		buf;
+		if (ifs.is_open() == 0) {
+			std::cout << "file doesn't exist" << std::endl;
+			return 1;
+		}
+		while (!ifs.eof()) {
+			std::getline(ifs, buf);
+			_body.append(buf);
+			_body.append("\n");
+		}
+		ifs.close();
+		// _body = "<Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html>";
 	}
 	else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
 		_errCode = "200 ok";
