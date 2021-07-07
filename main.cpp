@@ -38,7 +38,6 @@ int	socket_init(int port)
 {
 	int listen_socket;
 	int on = 1;
-	sockaddr_in addr;
 
 	/* открываем сокет и присваиваем его в listen_socket */
 	if (!(listen_socket = socket(PF_INET, SOCK_STREAM, 0)))
@@ -57,6 +56,7 @@ int	socket_init(int port)
 	/* делаем наш сокет неблокирующим, чтоб процесс не вис тут, если клиент не отвечает */
 	fcntl(listen_socket, F_SETFL, O_NONBLOCK);
 	/* подготавливаем стандартную структуру с настройками порта и привязываем сокет к порту */
+	struct sockaddr_in addr;
 	addr.sin_family = PF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -142,6 +142,7 @@ int main()
 						sockaddr_storage client_addr;
 						unsigned int address_size = sizeof(client_addr);
 						int conn = accept((*it)->getSocket(), (sockaddr *) &client_addr, &address_size);
+						fcntl(conn, F_SETFL, O_NONBLOCK);
 						Websocket *s = new Websocket(conn, READ);
 						sockets.push_back(s);
 					}
