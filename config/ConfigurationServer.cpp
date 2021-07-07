@@ -369,7 +369,7 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                     {
                         line[i].assign(line[i].begin(), line[i].end() - 1);
                     }
-                    else if (line[i] != "GET" && line[i] != "PUT" && line[i] != "POST")
+                    else if (line[i] != "GET" && line[i] != "PUT" && line[i] != "POST" && line[i] != "DELETE")
                     {
                         throw ConfigurationServer::ServerParserException();
                         exit(SYNTAX_ERROR);
@@ -449,7 +449,7 @@ void    ConfigurationServer::parseMethods(std::vector<std::string> &line)
                 {
                     line[i].assign(line[i].begin(), line[i].end() - 1);
                 }
-                else if (line[i] != "GET" && line[i] != "PUT" && line[i] != "POST")
+                else if (line[i] != "GET" && line[i] != "PUT" && line[i] != "POST" && line[i] != "DELETE")
                 {
                     throw ConfigurationServer::ServerParserException();
                     exit(SYNTAX_ERROR);
