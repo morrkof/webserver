@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:02:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/07 09:31:01 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/07 23:33:07 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@
  *      std::set<std::string>               methods; - методы
  *      std::vector<std::string>            indexVec; - возможные стартовые страницы
  *      returnAddress                       returnAddr; - в случае перенаправления
+ * 		std::set<std::string>       		methods;
  * 
  * Структура t_listen:
  * 
@@ -51,6 +52,10 @@
  * 	    	bool                        autoindex;
  * 	    	std::vector<std::string>    try_files; - какие файлы перебирает
  * 	    	int                         errorCode; - код ошибки, если файлов нет
+ * 			std::string                 		fastcgi_include;
+ * 			std::string                 		fastcgi_pass;
+ * 	    	std::set<std::string>       		methods;
+ * 	    	int                         		client_body_size;
  * 		};
  * 
  */

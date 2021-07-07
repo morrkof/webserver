@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ConfigurationServer.cpp                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/06/05 15:52:16 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/07 09:34:14 by bbelen           ###   ########.fr       */
-/*                                                                            */
+/*                                      */
+/*                            :::     ::::::::   */
+/*   ConfigurationServer.cpp                            :+:   :+:    :+:   */
+/*                          +:+ +:+       +:+    */
+/*   By: bbelen <bbelen@21-school.ru>            +#+  +:+       +#+    */
+/*                        +#+#+#+#+#+   +#+     */
+/*   Created: 2021/06/05 15:52:16 by bbelen   #+#  #+#          */
+/*   Updated: 2021/07/07 23:15:27 by bbelen     ###   ########.fr    */
+/*                                      */
 /* ************************************************************************** */
 
 #include "ConfigurationFile.hpp"
@@ -81,7 +81,7 @@ void    ConfigurationServer::addIndex(std::string index)
 }
 
 
-std::vector<t_listen>       ConfigurationServer::getListenVec()
+std::vector<t_listen>      ConfigurationServer::getListenVec()
 {
     return this->listenVec;
 }
@@ -91,17 +91,17 @@ std::vector<std::string>    ConfigurationServer::getServerNameVec()
     return this->serverNameVec;
 }
 
-std::string                 ConfigurationServer::getRoot()
+std::string     ConfigurationServer::getRoot()
 {
     return this->root;
 }
 
-std::vector<location>       ConfigurationServer::getLocationVec()
+std::vector<location>      ConfigurationServer::getLocationVec()
 {
     return this->locationVec;
 }
 
-std::set<std::string>       ConfigurationServer::getMethods()
+std::set<std::string>      ConfigurationServer::getMethods()
 {
     return this->methods;
 }
@@ -111,7 +111,7 @@ std::vector<std::string>    ConfigurationServer::getIndexVec()
     return this->indexVec;
 }
 
-returnAddress               ConfigurationServer::getReturnAddress()
+returnAddress            ConfigurationServer::getReturnAddress()
 {
     return this->returnAddr;
 }
@@ -157,7 +157,7 @@ void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
         this->addServerName(line[i]);
         //std::cout << "---------Success server_name: " << this->serverNameVec[i - 1] << std::endl;
     }
-    
+        
 }
 
 void    ConfigurationServer::parseRoot(std::vector<std::string> &line)
@@ -217,6 +217,7 @@ void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
 
         newLocation.route = line[1];
         newLocation.autoindex = false;
+        newLocation.client_body_size = -1;
         if (line[2] != "{")
         {
             throw ConfigurationServer::ServerParserException();
@@ -341,10 +342,64 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                 else
                 {
                     throw ConfigurationServer::ServerParserException();
-                    exit(SYNTAX_ERROR);                    
+                    exit(SYNTAX_ERROR);     
                 }
             }
             lastLocation.fastcgi_pass = line[i];
+        }
+    }
+    else if (line[0] == "allow_methods")
+    {
+        if (line.size() < 2 || (line.size() == 2 && line[1] == ";" ))
+        {
+            throw ConfigurationServer::ServerParserException();
+            exit(SYNTAX_ERROR);
+        }
+        else
+        {
+            for (unsigned long i = 1; i < line.size(); i++)
+            {
+                if (i + 1 == line.size())
+                {
+                    // ';' может быть через пробел, тогда просто игнорируем, если приклеена
+                    // то обрезаем, иначе - ошибка синтаксиса, ибо ';'должна быть
+                    if (line[i] == ";")
+                        break;
+                    else if (line[i][line[i].size() - 1] == ';')
+                    {
+                        line[i].assign(line[i].begin(), line[i].end() - 1);
+                    }
+                    else if (line[i] != "GET" && line[i] != "PUT" && line[i] != "POST")
+                    {
+                        throw ConfigurationServer::ServerParserException();
+                        exit(SYNTAX_ERROR);
+                    }
+                    else
+                    {
+                        throw ConfigurationServer::ServerParserException();
+                        exit(SYNTAX_ERROR);     
+                    }
+                }
+                lastLocation.methods.insert(line[i]);
+            }
+        }
+    }
+    else if (line[0] == "client_body_size")
+    {
+        if (line.size() < 2)
+        {
+            throw ConfigurationServer::ServerParserException();
+            exit(SYNTAX_ERROR); 
+        }
+        else
+        {
+            int size = std::atoi(line[1].c_str());
+            if (size <= 0)
+            {
+                throw ConfigurationServer::ServerParserException();
+                exit(SYNTAX_ERROR); 
+            }
+            lastLocation.client_body_size = size;
         }
     }
     else
@@ -352,7 +407,7 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         throw ConfigurationServer::ServerParserException();
         exit(SYNTAX_ERROR);
     }
-    
+        
 }
 
 void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
@@ -371,6 +426,43 @@ void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
         exit(SYNTAX_ERROR);
     }
     //std::cout << "---------Success return: " << this->returnAddr.errorCode << std::endl;
+}
+
+void    ConfigurationServer::parseMethods(std::vector<std::string> &line)
+{
+    if (line.size() < 2 || (line.size() == 2 && line[1] == ";" ))
+    {
+        throw ConfigurationServer::ServerParserException();
+        exit(SYNTAX_ERROR);
+    }
+    else
+    {
+        for (unsigned long i = 1; i < line.size(); i++)
+        {
+            if (i + 1 == line.size())
+            {
+                // ';' может быть через пробел, тогда просто игнорируем, если приклеена
+                // то обрезаем, иначе - ошибка синтаксиса, ибо ';'должна быть
+                if (line[i] == ";")
+                        break;
+                else if (line[i][line[i].size() - 1] == ';')
+                {
+                    line[i].assign(line[i].begin(), line[i].end() - 1);
+                }
+                else if (line[i] != "GET" && line[i] != "PUT" && line[i] != "POST")
+                {
+                    throw ConfigurationServer::ServerParserException();
+                    exit(SYNTAX_ERROR);
+                }
+                else
+                {
+                    throw ConfigurationServer::ServerParserException();
+                    exit(SYNTAX_ERROR);     
+                }
+            }
+            this->methods.insert(line[i]);
+        }
+    }
 }
 
 const char* ConfigurationServer::ServerParserException::what() const throw()

@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/07 09:35:32 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/07 23:30:46 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
 
 void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, ConfigurationServer &server)
 {
-    // std::cout << "line: " << line[0] << std::endl; 
+    //std::cout << "line: " << line[0] << std::endl; 
     if (line[0] == "listen")
         server.parseListen(line);
     else if (line[0] == "server_name")
@@ -165,15 +165,21 @@ void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, Configu
         server.parseLocation(line);
     else if (line[0] == "return")
         server.parseReturn(line);
-    else if (line[0] == "autoindex" && server.getLastLocation().finished == false)
+    else if (line[0] == "autoindex" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
         server.updateLocation(line);
-    else if (line[0] == "try_files" && server.getLastLocation().finished == false)
+    else if (line[0] == "try_files" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
         server.updateLocation(line);
-    else if (line[0] == "include" && server.getLastLocation().finished == false)
+    else if (line[0] == "include" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
         server.updateLocation(line);
-    else if (line[0] == "fastcgi_pass" && server.getLastLocation().finished == false)
+    else if (line[0] == "fastcgi_pass" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
         server.updateLocation(line);
-    else if (line[0] == "}" && server.getLastLocation().finished == false)
+    else if (line[0] == "client_body_size" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
+        server.updateLocation(line);
+    else if (line[0] == "allow_methods" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
+        server.updateLocation(line);
+    else if (line[0] == "allow_methods")
+        server.parseMethods(line);
+    else if (line[0] == "}" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
         server.getLastLocation().finished = true;
     else
     {

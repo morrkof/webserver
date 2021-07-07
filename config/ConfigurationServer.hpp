@@ -29,6 +29,8 @@ struct location
     int                         errorCode;
     std::string                 fastcgi_include;
     std::string                 fastcgi_pass;
+    std::set<std::string>       methods;
+    int                         client_body_size;
 };
 
 struct returnAddress
@@ -81,6 +83,7 @@ class ConfigurationServer
         void    parseIndex(std::vector<std::string> &line);
         void    parseLocation(std::vector<std::string> &line);
         void    parseReturn(std::vector<std::string> &line);
+        void    parseMethods(std::vector<std::string> &line);
         void    updateLocation(std::vector<std::string> &line);
 
         class ServerParserException : public std::exception
