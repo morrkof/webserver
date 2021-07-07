@@ -39,7 +39,7 @@ struct returnAddress
 class ConfigurationServer
 {
     private:
-        std::vector<t_listen>                 listenVec;
+        std::vector<t_listen>               listenVec;
         std::string                         root;
         std::vector<std::string>            serverNameVec;
         std::vector<location>               locationVec;
