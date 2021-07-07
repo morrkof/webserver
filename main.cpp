@@ -19,18 +19,20 @@
 
 #define PORT 8080 // это ждём из конфига
 
-void	getConfig(std::string	fileName)
+ConfigurationFile*	getConfig(std::string	fileName)
 {
-	ConfigurationFile	configParser;
+	ConfigurationFile	*configParser = new ConfigurationFile();
 
 	std::cout << "Start parse config" << std::endl;
-	configParser.parseFile(fileName);
+	configParser->parseFile(fileName);
 	std::cout << "Finish parse config" << std::endl;
-	std::vector<ConfigurationServer> servers = configParser.getServers();
+	std::vector<ConfigurationServer> servers = configParser->getServers();
 	for (unsigned long i = 0; i < servers.size(); i++)
 	{
 		std::cout << servers[i];
 	}
+
+	return configParser;
 }
 
 /* создаём слушающие сокеты в этой функции */
@@ -76,11 +78,20 @@ int	socket_init(int port)
 	return listen_socket;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+	ConfigurationFile *config;
 
 	/* Пошел сюда конфиг */
-	getConfig("basic.conf");
+	if (argc == 1)
+		config = getConfig("basic_static.conf");
+	else
+	{
+		std::string filename(argv[1]);
+		config = getConfig(filename);
+	}
+
+	std::cout << "Got config in main. Servers: " << config->getServers().size() << std::endl;
 
 	/* инициализируем сокеты и создаём массив слушающих сокетов на всех доступных портах  */
 	std::list<Websocket *> sockets;

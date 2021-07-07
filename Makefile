@@ -9,7 +9,7 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 all: $(NAME)
 $(NAME): $(OBJ)
-	clang++ $(OBJ) $(CFLAGS) -o $(NAME) && ./$(NAME)
+	clang++ $(OBJ) $(CFLAGS) -o $(NAME)
 %.o: %.cpp
 	clang++ $(CFLAGS) -c $< -o $@
 clean:

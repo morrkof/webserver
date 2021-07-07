@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:52:16 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/06 11:17:22 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/07 09:09:55 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,11 +211,12 @@ void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
         location newLocation;
 
         newLocation.route = line[1];
+        newLocation.autoindex = false;
         if (line[2] != "{")
             throw ConfigurationServer::ServerParserException();
         newLocation.finished = false;
         this->addLocation(newLocation); 
-        // std::cout << "location added: " << this->getLocationVec().size() << std::endl;
+        std::cout << "location added: " << this->getLocationVec().size() << std::endl;
     }
     else
     {
@@ -330,8 +331,8 @@ std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
         os << listenVec[i].port << " ";
     }
     os << std::endl;
-    os << "Locations: " << std::endl;
     std::vector<location> locationVec = server.getLocationVec();
+    os << "Locations: " << locationVec.size() << std::endl;
     for (unsigned long i = 0; i < locationVec.size(); i++)
     {
         os << locationVec[i].route << " " << locationVec[i].errorCode << " ";
