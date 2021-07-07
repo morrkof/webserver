@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:52:16 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/07 09:09:55 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/07 09:34:14 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,7 @@ void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
     if (line.size() == 1)
     {
         throw ConfigurationServer::ServerNameException();
+        exit(SYNTAX_ERROR);
     }
     for (unsigned long i = 1; i < line.size(); i++)
     {
@@ -150,6 +151,7 @@ void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
             else
             {
                 throw ConfigurationServer::ServerParserException();
+                exit(SYNTAX_ERROR);
             }
         }
         this->addServerName(line[i]);
@@ -172,6 +174,7 @@ void    ConfigurationServer::parseRoot(std::vector<std::string> &line)
     else
     {
         throw ConfigurationServer::ServerParserException();
+        exit(SYNTAX_ERROR);
     }
     //std::cout << "---------Success root: " << this->root << std::endl;
 }
@@ -181,6 +184,7 @@ void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
     if (line.size() == 1)
     {
         throw ConfigurationServer::ServerIndexException();
+        exit(SYNTAX_ERROR);
     }
     for (unsigned long i = 1; i < line.size(); i++)
     {
@@ -197,6 +201,7 @@ void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
             else
             {
                 throw ConfigurationServer::ServerParserException();
+                exit(SYNTAX_ERROR);
             }
         }
         this->addIndex(line[i]);
@@ -213,14 +218,18 @@ void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
         newLocation.route = line[1];
         newLocation.autoindex = false;
         if (line[2] != "{")
+        {
             throw ConfigurationServer::ServerParserException();
+            exit(SYNTAX_ERROR);
+        }
         newLocation.finished = false;
         this->addLocation(newLocation); 
-        std::cout << "location added: " << this->getLocationVec().size() << std::endl;
+        // std::cout << "location added: " << this->getLocationVec().size() << std::endl;
     }
     else
     {
         throw ConfigurationServer::ServerParserException();
+        exit(SYNTAX_ERROR);
     }
 }
 
@@ -243,7 +252,10 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         else if (line[1] == "off;")
             lastLocation.autoindex = false;
         else
+        {
             throw ConfigurationServer::ServerParserException();
+            exit(SYNTAX_ERROR);
+        }
     }
     else if (line[0] == "try_files")
     {
@@ -264,17 +276,83 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                         lastLocation.errorCode = errorCode;
                     }
                     else
+                    {
                         throw ConfigurationServer::ServerParserException();
+                        exit(SYNTAX_ERROR);
+                    }
                     break;
                 }
                 else
                 {
                     throw ConfigurationServer::ServerParserException();
+                    exit(SYNTAX_ERROR);
                 }
             }
             lastLocation.try_files.push_back(line[1]);
         }
     }
+    else if (line[0] == "include")
+    {
+        if (line.size() > 3)
+        {
+            throw ConfigurationServer::ServerParserException();
+            exit(SYNTAX_ERROR);
+        }
+        for (unsigned long i = 1; i < line.size(); i++)
+        {
+            if (i + 1 == line.size())
+            {
+                // ';' может быть через пробел, тогда просто игнорируем, если приклеена
+                // то обрезаем, иначе - ошибка синтаксиса, ибо ';'должна быть
+                if (line[i] == ";")
+                    break;
+                else if (line[i][line[i].size() - 1] == ';')
+                {
+                    line[i].assign(line[i].begin(), line[i].end() - 1);
+                }
+                else
+                {
+                    throw ConfigurationServer::ServerParserException();
+                    exit(SYNTAX_ERROR);
+                }
+            }
+            lastLocation.fastcgi_include = line[i];
+        }
+    }
+    else if (line[0] == "fastcgi_pass")
+    {
+        if (line.size() > 3)
+        {
+            throw ConfigurationServer::ServerParserException();
+            exit(SYNTAX_ERROR);
+        }
+        for (unsigned long i = 1; i < line.size(); i++)
+        {
+            if (i + 1 == line.size())
+            {
+                // ';' может быть через пробел, тогда просто игнорируем, если приклеена
+                // то обрезаем, иначе - ошибка синтаксиса, ибо ';'должна быть
+                if (line[i] == ";")
+                    break;
+                else if (line[i][line[i].size() - 1] == ';')
+                {
+                    line[i].assign(line[i].begin(), line[i].end() - 1);
+                }
+                else
+                {
+                    throw ConfigurationServer::ServerParserException();
+                    exit(SYNTAX_ERROR);                    
+                }
+            }
+            lastLocation.fastcgi_pass = line[i];
+        }
+    }
+    else
+    {
+        throw ConfigurationServer::ServerParserException();
+        exit(SYNTAX_ERROR);
+    }
+    
 }
 
 void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
@@ -290,6 +368,7 @@ void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
     else
     {
         throw ConfigurationServer::ServerParserException();
+        exit(SYNTAX_ERROR);
     }
     //std::cout << "---------Success return: " << this->returnAddr.errorCode << std::endl;
 }

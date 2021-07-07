@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/07 09:11:43 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/07 09:35:32 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ void    ConfigurationFile::parseFile(std::string filename)
     if (!(config.is_open()))
     {
         throw ConfigurationFile::ConfigFileNotFoundException();
+        exit(FILE_ERROR);
     }
     
     std::string         line; 
@@ -103,10 +104,12 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     if (!map.checkBrackets())
     {
         throw ConfigurationFile::ConfigFileParserException();
+        exit(SYNTAX_ERROR);
     }
     if (!map.checkBlockName())
     {
         throw ConfigurationFile::ConfigFileParserException();
+        exit(SYNTAX_ERROR);
     }
     //std::cout << "--------Ok block OK brackets" << std::endl;
     
@@ -166,12 +169,17 @@ void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, Configu
         server.updateLocation(line);
     else if (line[0] == "try_files" && server.getLastLocation().finished == false)
         server.updateLocation(line);
+    else if (line[0] == "include" && server.getLastLocation().finished == false)
+        server.updateLocation(line);
+    else if (line[0] == "fastcgi_pass" && server.getLastLocation().finished == false)
+        server.updateLocation(line);
     else if (line[0] == "}" && server.getLastLocation().finished == false)
         server.getLastLocation().finished = true;
     else
     {
         std::cout << "Error config line: |" << line[0] << "|" << std::endl;
         throw ConfigurationFile::ConfigFileParserException();
+        exit(SYNTAX_ERROR);
     }
     
 }

@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:02:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/07 08:33:01 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/07 09:31:01 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,3 +65,6 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+
+#define SYNTAX_ERROR	1
+#define FILE_ERROR		2

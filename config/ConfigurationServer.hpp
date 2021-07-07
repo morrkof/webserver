@@ -27,6 +27,8 @@ struct location
     std::vector<std::string>    try_files;
     bool                        finished;
     int                         errorCode;
+    std::string                 fastcgi_include;
+    std::string                 fastcgi_pass;
 };
 
 struct returnAddress
