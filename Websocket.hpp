@@ -19,9 +19,10 @@ private:
 	socket_type _type;
 	RequestParsing _request;
 	Response _response;
+	std::vector<ConfigurationServer>	_serversVec;
 
 public:
-	Websocket(int socket, socket_type type);
+	Websocket(int socket, socket_type type, std::vector<ConfigurationServer> servers);
 	~Websocket();
 	Websocket();
 

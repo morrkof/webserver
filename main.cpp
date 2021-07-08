@@ -19,7 +19,7 @@
 
 #define PORT 8080 // это ждём из конфига
 
-void	getConfig(std::string	fileName)
+std::vector<ConfigurationServer>	getConfig(std::string	fileName)
 {
 	ConfigurationFile	configParser;
 
@@ -29,6 +29,7 @@ void	getConfig(std::string	fileName)
 	std::cout << "-------root: " << servers[0].getRoot() << std::endl;
 	std::cout << "server_name: " << *(servers[0].getServerNameVec().begin()) << std::endl;
 	std::cout << "-----listen: " << servers[0].getListenVec().begin()->port << std::endl;
+	return servers;
 }
 
 /* создаём слушающие сокеты в этой функции */
@@ -80,7 +81,7 @@ int main()
 	 * Config set
 	 */
 
-	getConfig("basic.conf");
+	std::vector<ConfigurationServer> servers = getConfig("basic.conf");
 
 	/**
 	 * end config set
@@ -88,7 +89,7 @@ int main()
 
 	/* инициализируем сокеты и создаём массив слушающих сокетов на всех доступных портах  */
 	std::list<Websocket *> sockets;
-	Websocket *s = new Websocket(socket_init(PORT), LISTEN); // TODO: массив портов и цикл по ним
+	Websocket *s = new Websocket(socket_init(PORT), LISTEN, servers); // TODO: массив портов и цикл по ним
 	sockets.push_back(s);
 	std::cout << "🦄 Waiting for connect\n";
 
@@ -147,7 +148,7 @@ int main()
 						unsigned int address_size = sizeof(client_addr);
 						int conn = accept((*it)->getSocket(), (sockaddr *) &client_addr, &address_size);
 						fcntl(conn, F_SETFL, O_NONBLOCK);
-						Websocket *s = new Websocket(conn, READ);
+						Websocket *s = new Websocket(conn, READ, servers);
 						sockets.push_back(s);
 					}
 					/* если это сокет данных, то читаем запрос и формируем ответ, внутри класса пометка READ превратится во WRITE */

@@ -1,7 +1,7 @@
 #include "Websocket.hpp"
 
-Websocket::Websocket(int socket, socket_type type)
-: _socket(socket), _type(type) {}
+Websocket::Websocket(int socket, socket_type type, std::vector<ConfigurationServer> servers)
+: _socket(socket), _type(type), _serversVec(servers) {}
 Websocket::~Websocket() { close(_socket);}
 
 int Websocket::getSocket(void) const { return _socket; }
@@ -16,7 +16,8 @@ void Websocket::setRequest(std::string buf)
 { 
 	_type = WRITE; 
 	_request = RequestParsing(buf); 
-	_response = Response(_request); 
+	_response = Response(_request, _serversVec);
+	
 }
 
 bool compare_ws(Websocket *lhs, Websocket *rhs)
