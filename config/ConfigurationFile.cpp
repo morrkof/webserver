@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/07 23:30:46 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/09 12:54:57 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 ConfigurationFile::ConfigurationFile()
 {
-
+    this->serverVec = NULL;
 }
 
 ConfigurationFile::~ConfigurationFile()
@@ -33,12 +33,18 @@ ConfigurationFile &ConfigurationFile::operator=(const ConfigurationFile &file)
     return (*this);
 }
 
-void    ConfigurationFile::addServer(ConfigurationServer server)
+void    ConfigurationFile::addServer(ConfigurationServer *server)
 {
-    this->serverVec.push_back(server);
+    if (this->serverVec == NULL)
+    {
+        this->serverVec = new std::vector<ConfigurationServer>();
+        this->serverVec->assign(1, *server);
+    }
+    else
+        this->serverVec->push_back(*server);
 }
 
-std::vector<ConfigurationServer>    ConfigurationFile::getServers()
+std::vector<ConfigurationServer>    *ConfigurationFile::getServers()
 {
     return (this->serverVec);
 }
@@ -115,7 +121,10 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     
     std::vector<std::string>::iterator  it = block.begin();
     std::vector<std::string>::iterator  itEnd = block.end();
-    ConfigurationServer server;
+    
+    ConfigurationServer *server = new ConfigurationServer();
+
+    // std::cout << "----new server created" << std::endl;
 
     while (it != itEnd)
     {
@@ -130,8 +139,11 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     }
 
     //std::cout << "Config block ready." << std::endl;
+    // std::cout << "----adding server" << std::endl;
     this->addServer(server);
-
+    // std::cout << "----server added" << std::endl;
+    // std::cout << "---CHECK PARSING-----" << std::endl << *(this->getServers()->begin());
+    // std::cout << "---CHECK PARSING END-" << std::endl;
 }
 
 bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
@@ -150,37 +162,47 @@ bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
     return true;
 }
 
-void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, ConfigurationServer &server)
+void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, ConfigurationServer *server)
 {
-    //std::cout << "line: " << line[0] << std::endl; 
+    // std::cout << "line: ";
+    // for (unsigned long i = 0; i < line.size(); i++)
+    // {
+    //     std::cout << line[i] << " ";
+    // }
+    // std::cout << std::endl;
+    // if (server->getIndexVec() != NULL)
+    // {
+    //     std::cout << "has indeces" << std::endl;
+    // }
+    
     if (line[0] == "listen")
-        server.parseListen(line);
+        server->parseListen(line);
     else if (line[0] == "server_name")
-        server.parseServerName(line);
+        server->parseServerName(line);
     else if (line[0] == "root")
-        server.parseRoot(line);
+        server->parseRoot(line);
     else if (line[0] == "index")
-        server.parseIndex(line);
+        server->parseIndex(line);
     else if (line[0] == "location")
-        server.parseLocation(line);
+        server->parseLocation(line);
     else if (line[0] == "return")
-        server.parseReturn(line);
-    else if (line[0] == "autoindex" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
-        server.updateLocation(line);
-    else if (line[0] == "try_files" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
-        server.updateLocation(line);
-    else if (line[0] == "include" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
-        server.updateLocation(line);
-    else if (line[0] == "fastcgi_pass" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
-        server.updateLocation(line);
-    else if (line[0] == "client_body_size" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
-        server.updateLocation(line);
-    else if (line[0] == "allow_methods" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
-        server.updateLocation(line);
+        server->parseReturn(line);
+    else if (line[0] == "autoindex" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->updateLocation(line);
+    else if (line[0] == "try_files" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->updateLocation(line);
+    else if (line[0] == "include" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->updateLocation(line);
+    else if (line[0] == "fastcgi_pass" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->updateLocation(line);
+    else if (line[0] == "client_body_size" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->updateLocation(line);
+    else if (line[0] == "allow_methods" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->updateLocation(line);
     else if (line[0] == "allow_methods")
-        server.parseMethods(line);
-    else if (line[0] == "}" && server.getLocationVec().size() > 0 && server.getLastLocation().finished == false)
-        server.getLastLocation().finished = true;
+        server->parseMethods(line);
+    else if (line[0] == "}" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->getLastLocation().finished = true;
     else
     {
         std::cout << "Error config line: |" << line[0] << "|" << std::endl;

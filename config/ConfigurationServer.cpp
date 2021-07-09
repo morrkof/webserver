@@ -14,7 +14,11 @@
 
 ConfigurationServer::ConfigurationServer()
 {
-
+    this->serverNameVec = NULL;
+    this->root = "";
+    this->indexVec = NULL;
+    //this->returnAddr = "";
+    //this->locationVec = NULL;
 }
 
 ConfigurationServer::~ConfigurationServer()
@@ -35,6 +39,8 @@ ConfigurationServer &ConfigurationServer::operator=(const ConfigurationServer &c
     this->root = config.root;
     this->serverNameVec = config.serverNameVec;
     this->locationVec = config.locationVec;
+    this->indexVec = config.indexVec;
+    this->returnAddr = config.returnAddr;
 
     return *this;
 }
@@ -51,10 +57,15 @@ void    ConfigurationServer::setRoot(std::string root)
 
 void    ConfigurationServer::addServerName(std::string serverName)
 {
-    this->serverNameVec.push_back(serverName);
+    if (this->serverNameVec == NULL)
+    {
+        this->serverNameVec = new std::vector<std::string>(1, serverName);
+        return;
+    }
+    this->serverNameVec->push_back(serverName);
 }
 
-void    ConfigurationServer::addLocation(location location)
+void    ConfigurationServer::addLocation(location &location)
 {
     this->locationVec.push_back(location);
 }
@@ -77,7 +88,14 @@ void    ConfigurationServer::addReturnAddress(returnAddress returnAddr)
 
 void    ConfigurationServer::addIndex(std::string index)
 {
-    this->indexVec.push_back(index);
+        if (this->indexVec == NULL)
+    {
+        //std::cout << "No indeces before" << std::endl;
+        this->indexVec = new std::vector<std::string>(1, index);
+        //std::cout << *(this->indexVec->begin()) << std::endl;
+        return;
+    }
+    this->indexVec->push_back(index);
 }
 
 
@@ -86,7 +104,7 @@ std::vector<t_listen>      ConfigurationServer::getListenVec()
     return this->listenVec;
 }
 
-std::vector<std::string>    ConfigurationServer::getServerNameVec()
+std::vector<std::string>    *ConfigurationServer::getServerNameVec()
 {
     return this->serverNameVec;
 }
@@ -96,7 +114,7 @@ std::string     ConfigurationServer::getRoot()
     return this->root;
 }
 
-std::vector<location>      ConfigurationServer::getLocationVec()
+std::vector<location>      &ConfigurationServer::getLocationVec()
 {
     return this->locationVec;
 }
@@ -106,7 +124,7 @@ std::set<std::string>      ConfigurationServer::getMethods()
     return this->methods;
 }
 
-std::vector<std::string>    ConfigurationServer::getIndexVec()
+std::vector<std::string>    *ConfigurationServer::getIndexVec()
 {
     return this->indexVec;
 }
@@ -205,7 +223,6 @@ void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
             }
         }
         this->addIndex(line[i]);
-        //std::cout << "---------Success server_name: " << this->indexVec[i - 1] << std::endl;
     }
 }
 
@@ -213,18 +230,24 @@ void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
 {
     if (line.size() == 3)
     {
-        location newLocation;
+        location *newLocation = new location();
 
-        newLocation.route = line[1];
-        newLocation.autoindex = false;
-        newLocation.client_body_size = -1;
+        newLocation->route = std::string(line[1]);
+        newLocation->autoindex = false;
+        newLocation->client_body_size = -1;
+        newLocation->try_files = NULL;
+        newLocation->try_files = new std::vector<std::string>();
         if (line[2] != "{")
         {
             throw ConfigurationServer::ServerParserException();
+            delete newLocation;
             exit(SYNTAX_ERROR);
         }
-        newLocation.finished = false;
-        this->addLocation(newLocation); 
+        newLocation->errorCode = -1;
+        newLocation->fastcgi_include = "";
+        newLocation->fastcgi_pass = "";
+        newLocation->finished = false;
+        this->addLocation(*newLocation); 
         // std::cout << "location added: " << this->getLocationVec().size() << std::endl;
     }
     else
@@ -289,7 +312,7 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                     exit(SYNTAX_ERROR);
                 }
             }
-            lastLocation.try_files.push_back(line[1]);
+            lastLocation.try_files->push_back(line[1]);
         }
     }
     else if (line[0] == "include")
@@ -487,28 +510,82 @@ const char* ConfigurationServer::ServerIndexException::what() const throw()
 
 std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
 {
-	os << "----Server name: ";
-    std::vector<std::string> serverNames = server.getServerNameVec();
-    for (unsigned long i = 0; i < serverNames.size(); i++)
+    if (server.getServerNameVec() != NULL)
     {
-        os << serverNames[i] << " ";
+        os << "server names size " << server.getServerNameVec()->size() << ": [";
+        std::vector<std::string> *serverNames = server.getServerNameVec();
+        for (unsigned long i = 0; i < serverNames->size(); i++)
+        {
+            os << serverNames->at(i);
+            if (i + 1 < serverNames->size())
+                os << "] [";
+        }
+        os << "]" << std::endl;
     }
-    os << std::endl;
-    os << "Root: " << server.getRoot() << std::endl;
-    os << "Ports: ";
+    os << "root: [" << server.getRoot() << "]" << std::endl;
+    os << "ports: [";
     std::vector<t_listen> listenVec = server.getListenVec();
     for (unsigned long i = 0; i < listenVec.size(); i++)
     {
-        os << listenVec[i].port << " ";
+        os << listenVec[i].port;
+        if (i + 1 < listenVec.size())
+            os << "] [";
     }
-    os << std::endl;
-    std::vector<location> locationVec = server.getLocationVec();
-    os << "Locations: " << locationVec.size() << std::endl;
+    os << "]" << std::endl;
+
+    std::vector<std::string> *indexVec = server.getIndexVec();
+    if (indexVec != NULL)
+    {
+        os << "index size " << indexVec->size() << ": [";
+        for (unsigned long i = 0; i < indexVec->size(); i++)
+        {
+            os << indexVec->at(i);
+            if (i + 1 < indexVec->size())
+                os << "] [";
+        }
+        os << "]" << std::endl;
+    }
+    os << "methods: [";
+    std::set<std::string> methodsSet = server.getMethods();
+    std::set<std::string>::iterator it = methodsSet.begin();
+    std::set<std::string>::iterator itEnd = methodsSet.end();
+    int size = methodsSet.size();
+    while (it != itEnd)
+    {
+        os << *it;
+        if (size - 1 > 0)
+            os << "] [";
+        it++;
+        size--;
+    }
+    os << "]" << std::endl;
+
+    std::vector<location> &locationVec = server.getLocationVec();
+    os << "locations: " << locationVec.size() << std::endl;
     for (unsigned long i = 0; i < locationVec.size(); i++)
     {
-        os << locationVec[i].route << " " << locationVec[i].errorCode << " ";
+        os << "route: [";
+        os << locationVec[i].route << "] with errorCode: [" << locationVec[i].errorCode;
+        os << "] cgi: [" << locationVec[i].fastcgi_pass;
+        os << "] cgi_include: [" << locationVec[i].fastcgi_include;
+        if (locationVec[i].try_files != NULL)
+        {
+            os << "] try_files: [";
+            for (unsigned long j = 0; j < locationVec[i].try_files->size(); j++)
+            {
+                os << locationVec[i].try_files->at(j) << "] [";
+            }
+        }
+        os << "] methods: [";
+        std::set<std::string>::iterator it = locationVec[i].methods.begin();
+        std::set<std::string>::iterator itEnd = locationVec[i].methods.end();
+        while (it != itEnd)
+        {
+            os << *it << " ";
+            it++;
+        }
+        os << "]" << std::endl;
     }
-    os << std::endl;
 	
 	return (os);
 }

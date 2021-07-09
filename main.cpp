@@ -26,10 +26,11 @@ ConfigurationFile*	getConfig(std::string	fileName)
 	std::cout << "Start parse config" << std::endl;
 	configParser->parseFile(fileName);
 	std::cout << "Finish parse config" << std::endl;
-	std::vector<ConfigurationServer> servers = configParser->getServers();
-	for (unsigned long i = 0; i < servers.size(); i++)
+	std::vector<ConfigurationServer> *servers = configParser->getServers();
+	std::cout << "Got servers: " << servers->size() << std::endl;
+	for (unsigned long i = 0; i < servers->size(); i++)
 	{
-		std::cout << servers[i];
+		std::cout << servers->at(i);
 	}
 
 	return configParser;
@@ -91,7 +92,7 @@ int main(int argc, char **argv)
 		config = getConfig(filename);
 	}
 
-	std::cout << "Got config in main. Servers: " << config->getServers().size() << std::endl;
+	std::cout << "Got config in main. Servers: " << config->getServers()->size() << std::endl;
 
 	/* инициализируем сокеты и создаём массив слушающих сокетов на всех доступных портах  */
 	std::list<Websocket *> sockets;
