@@ -93,10 +93,11 @@ int main(int argc, char **argv)
 	}
 
 	std::cout << "Got config in main. Servers: " << config->getServers()->size() << std::endl;
+	std::vector<ConfigurationServer> *servers = config->getServers();
 
 	/* инициализируем сокеты и создаём массив слушающих сокетов на всех доступных портах  */
 	std::list<Websocket *> sockets;
-	Websocket *s = new Websocket(socket_init(PORT), LISTEN); // TODO: массив портов и цикл по ним
+	Websocket *s = new Websocket(socket_init(PORT), LISTEN, *servers); // TODO: массив портов и цикл по ним
 	sockets.push_back(s);
 	std::cout << "🦄 Waiting for connect\n";
 
@@ -155,7 +156,7 @@ int main(int argc, char **argv)
 						unsigned int address_size = sizeof(client_addr);
 						int conn = accept((*it)->getSocket(), (sockaddr *) &client_addr, &address_size);
 						fcntl(conn, F_SETFL, O_NONBLOCK);
-						Websocket *s = new Websocket(conn, READ);
+						Websocket *s = new Websocket(conn, READ, *servers);
 						sockets.push_back(s);
 					}
 					/* если это сокет данных, то читаем запрос и формируем ответ, внутри класса пометка READ превратится во WRITE */

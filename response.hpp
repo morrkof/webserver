@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include "requestParsing.hpp"
+#include "config/ConfigurationServer.hpp"
 
 class Response {
 private:
@@ -15,14 +16,16 @@ private:
 	std::string							_contentType;
 	size_t								_responseLen;
 	RequestParsing						_parsedReq;
+	std::vector<ConfigurationServer>	_serversVec;
 
 public:
-	Response(RequestParsing req): _response("") ,_body(""), _errCode("200 ok"), _version(req.getVersion()), _responseLen(0), _parsedReq(req)
-	{generateContentType();parseResponse();};
+	Response(RequestParsing req, std::vector<ConfigurationServer> servers): _response("") ,_body(""), _errCode("200 ok"), _version(req.getVersion()), _responseLen(0), _parsedReq(req), _serversVec(servers)
+	{prr();generateContentType();parseResponse();};
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response() {}
 	Response		&operator=(Response const &equal_op);
+	void prr();
 	std::string		getResponse() const {return _response;}
 	std::string		getBody() const {return _body;}
 	size_t			getResponseLen() const {return _responseLen;}
