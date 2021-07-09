@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/09 18:52:55 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/09 19:47:15 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,11 @@ std::vector<ConfigurationServer>    *ConfigurationFile::getServers()
 
 void    ConfigurationFile::parseFile(std::string filename)
 {
-    // std::string::reverse_iterator it = filename.rend();
-
+	if (filename.find(".conf") == std::string::npos)
+	{
+		throw ConfigurationFile::ConfigFileFormatException();
+		exit(FILE_ERROR);
+	}
     
     std::ifstream   config;
 
@@ -222,4 +225,9 @@ const char* ConfigurationFile::ConfigFileNotFoundException::what() const throw()
 const char* ConfigurationFile::ConfigFileParserException::what() const throw()
 {
     return ("ConfigFileException: syntax error\n");
+}
+
+const char* ConfigurationFile::ConfigFileFormatException::what() const throw()
+{
+    return ("ConfigFileException: wrong file format\n");
 }

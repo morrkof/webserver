@@ -16,8 +16,8 @@ void		Response::prr() {
 	std::vector<std::string>::iterator it2;
 	std::cout << "@@@@@@@@@@@@@@ 1";
 	for (std::vector<ConfigurationServer>::iterator it = _serversVec.begin() ; it != _serversVec.end(); ++it) {
-		// for (it2 = it->getServerNameVec().begin() ; it2 != it->getServerNameVec().end(); ++it2)
-		// 	std::cout << ' ' << *it2;
+		for (it2 = it->getServerNameVec()->begin() ; it2 != it->getServerNameVec()->end(); ++it2)
+			std::cout << ' ' << *it2;
 		std::cout << "root" << it->getRoot() << std::endl;
 	}
 }

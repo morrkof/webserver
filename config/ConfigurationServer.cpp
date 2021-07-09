@@ -17,13 +17,16 @@ ConfigurationServer::ConfigurationServer()
     this->serverNameVec = NULL;
     this->root = "";
     this->indexVec = NULL;
-    //this->returnAddr = "";
-    //this->locationVec = NULL;
 }
 
 ConfigurationServer::~ConfigurationServer()
 {
-
+	delete this->serverNameVec;
+	delete this->indexVec;
+	for (unsigned long i = 0; i < this->locationVec.size(); i++)
+	{
+		delete locationVec[i].try_files;
+	}
 }
 
 ConfigurationServer::ConfigurationServer(const ConfigurationServer &config)

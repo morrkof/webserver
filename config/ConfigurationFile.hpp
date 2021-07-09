@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigurationFile.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
+/*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:36:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/09 11:40:57 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/09 19:45:37 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,12 @@ class ConfigurationFile
         };
 
         class ConfigFileParserException : public std::exception
+        {
+            public:
+                virtual const char* what() const throw();
+        };
+
+		class ConfigFileFormatException : public std::exception
         {
             public:
                 virtual const char* what() const throw();
