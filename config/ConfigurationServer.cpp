@@ -488,6 +488,16 @@ void    ConfigurationServer::parseMethods(std::vector<std::string> &line)
     }
 }
 
+void	ConfigurationServer::checkFilledServer()
+{
+	if (this->serverNameVec->size() == 0 || this->indexVec->size() == 0 ||
+			this->root == "" || this->locationVec.size() == 0)
+	{
+		throw ConfigurationServer::ServerNotEnoughParansException();
+		exit(SYNTAX_ERROR);
+	}
+}
+
 const char* ConfigurationServer::ServerParserException::what() const throw()
 {
     return ("ServerParserException: syntax error\n");
@@ -506,6 +516,11 @@ const char* ConfigurationServer::ServerNameException::what() const throw()
 const char* ConfigurationServer::ServerIndexException::what() const throw()
 {
     return ("ServerNameException: no index pages\n");
+}
+
+const char* ConfigurationServer::ServerNotEnoughParansException::what() const throw()
+{
+    return ("ServerNotEnoughParansException: not enough parameters\n");
 }
 
 std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)

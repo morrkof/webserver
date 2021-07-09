@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigurationFile.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
+/*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/09 12:54:57 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/09 18:52:55 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,8 @@ std::vector<ConfigurationServer>    *ConfigurationFile::getServers()
 
 void    ConfigurationFile::parseFile(std::string filename)
 {
-    //TODO: check name to have .conf
+    // std::string::reverse_iterator it = filename.rend();
+
     
     std::ifstream   config;
 
@@ -140,6 +141,7 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
 
     //std::cout << "Config block ready." << std::endl;
     // std::cout << "----adding server" << std::endl;
+	server->checkFilledServer();
     this->addServer(server);
     // std::cout << "----server added" << std::endl;
     // std::cout << "---CHECK PARSING-----" << std::endl << *(this->getServers()->begin());

@@ -86,6 +86,8 @@ class ConfigurationServer
         void    parseMethods(std::vector<std::string> &line);
         void    updateLocation(std::vector<std::string> &line);
 
+		void	checkFilledServer();
+
         class ServerParserException : public std::exception
         {
             public:
@@ -104,7 +106,13 @@ class ConfigurationServer
                 virtual const char* what() const throw();
         };
 
-        class ServerIndexException : public std::exception
+        class ServerNotEnoughParansException : public std::exception
+        {
+            public:
+                virtual const char* what() const throw();
+        };
+
+		class ServerIndexException : public std::exception
         {
             public:
                 virtual const char* what() const throw();
