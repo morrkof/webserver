@@ -16,13 +16,14 @@
 
 typedef struct  s_listen
 {
-    //int         host;
-    int         port;
+    std::string         host;
+    int                 port;
 }       t_listen;
 
 struct location
 {
     std::string                 route;
+    std::string                 root;
     bool                        autoindex;
     std::vector<std::string>    *try_files;
     bool                        finished;

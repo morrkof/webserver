@@ -140,12 +140,41 @@ returnAddress            ConfigurationServer::getReturnAddress()
 void    ConfigurationServer::parseListen(std::vector<std::string> &line)
 {
     t_listen  currentListen;
-    int possiblePort = std::atoi(line[1].c_str());
-    if (possiblePort < 1 || possiblePort > 65535)
+    currentListen.host = "";
+
+    std::string::iterator it = line[1].begin();
+    std::string::iterator itE = line[1].end();
+
+    while (it != itE && *it != ':')
+        it++;
+    
+    if (it != itE)
     {
-        throw ConfigurationServer::ServerPortException();
+        std::string host;
+        host.assign(line[1].begin(), it);
+        currentListen.host += host;
+
+        it++;
+        std::string port;
+        port.assign(it, line[1].end());
+        int possiblePort = std::atoi(port.c_str());
+        if (possiblePort < 1 || possiblePort > 65535)
+        {
+            throw ConfigurationServer::ServerPortException();
+            exit (SYNTAX_ERROR);
+        }
+        currentListen.port = possiblePort;
     }
-    currentListen.port = std::atoi(line[1].c_str());
+    else
+    {
+        int possiblePort = std::atoi(line[1].c_str());
+        if (possiblePort < 1 || possiblePort > 65535)
+        {
+            throw ConfigurationServer::ServerPortException();
+            exit (SYNTAX_ERROR);
+        }
+        currentListen.port = possiblePort;
+    }
     this->addListen(currentListen);
     //std::cout << "---------Success listen: " << currentListen.port << std::endl;
 }
@@ -354,6 +383,62 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         {
             throw ConfigurationServer::ServerParserException();
             exit(SYNTAX_ERROR);
+        }
+    }
+    else if (line[0] == "root")
+    {
+        if (line.size() > 3)
+        {
+            throw ConfigurationServer::ServerParserException();
+            exit(SYNTAX_ERROR);
+        }
+        for (unsigned long i = 1; i < line.size(); i++)
+        {
+            if (i + 1 == line.size())
+            {
+                // ';' может быть через пробел, тогда просто игнорируем, если приклеена
+                // то обрезаем, иначе - ошибка синтаксиса, ибо ';'должна быть
+                if (line[i] == ";")
+                    break;
+                else if (line[i][line[i].size() - 1] == ';')
+                {
+                    line[i].assign(line[i].begin(), line[i].end() - 1);
+                }
+                else
+                {
+                    throw ConfigurationServer::ServerParserException();
+                    exit(SYNTAX_ERROR);
+                }
+            }
+            lastLocation.root = line[1];
+        }
+    }
+    else if (line[0] == "index")
+    {
+        if (line.size() > 3)
+        {
+            throw ConfigurationServer::ServerParserException();
+            exit(SYNTAX_ERROR);
+        }
+        for (unsigned long i = 1; i < line.size(); i++)
+        {
+            if (i + 1 == line.size())
+            {
+                // ';' может быть через пробел, тогда просто игнорируем, если приклеена
+                // то обрезаем, иначе - ошибка синтаксиса, ибо ';'должна быть
+                if (line[i] == ";")
+                    break;
+                else if (line[i][line[i].size() - 1] == ';')
+                {
+                    line[i].assign(line[i].begin(), line[i].end() - 1);
+                }
+                else
+                {
+                    throw ConfigurationServer::ServerParserException();
+                    exit(SYNTAX_ERROR);
+                }
+            }
+            lastLocation.try_files->insert(lastLocation.try_files->begin(), line[i]);
         }
     }
     else if (line[0] == "try_files")
