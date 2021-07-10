@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/09 19:47:15 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/10 12:11:26 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ ConfigurationFile::ConfigurationFile()
 
 ConfigurationFile::~ConfigurationFile()
 {
-    
+    delete this->serverVec;
 }
 
 ConfigurationFile::ConfigurationFile(const ConfigurationFile &file)
@@ -137,6 +137,7 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
             std::istream_iterator<std::string>());
         if (map.getBlockName() == "server")
         {
+			//get iter here as well
             this->parseBlockLine(lineParts, server);
         }
         it++;
