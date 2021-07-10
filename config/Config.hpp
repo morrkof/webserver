@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
+/*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:02:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/07 23:33:07 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/10 12:50:33 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <dirent.h>
 
 #define SYNTAX_ERROR	1
 #define FILE_ERROR		2

@@ -265,15 +265,87 @@ location&   ConfigurationServer::getLastLocation()
     return (this->locationVec.back());
 }
 
+bool    ConfigurationServer::findFileInDirectory(location &lastLocation, std::string fileName)
+{
+    std::vector<std::string>::iterator it = lastLocation.try_files->begin();
+    std::vector<std::string>::iterator itE = lastLocation.try_files->end();
+
+    std::cout << std::endl;
+    while (it != itE)
+    {
+        std::cout << "Comparing |" << fileName << "| |" << *it << "|" << std::endl;
+        if (*it == fileName)
+            return true;
+        it++;
+    }
+    return false;
+}
+
+void    ConfigurationServer::fillTryFilesByAuto()
+{
+    location &lastLocation = this->getLastLocation();
+    if (lastLocation.try_files->size() == 0)
+    {
+        throw ConfigurationServer::ServerNotEnoughParansException();
+        exit (FILE_ERROR);
+    }
+    DIR *dir;
+    dirent *ent;
+    std::string dirPath = "./sites";
+    if (this->root != "")
+        dirPath = dirPath + this->root;
+    else
+    {
+        throw ConfigurationServer::ServerNotEnoughParansException();
+        exit(FILE_ERROR);
+    }
+
+    if (lastLocation.route != "")
+        dirPath = dirPath + lastLocation.route;
+    else
+    {
+        throw ConfigurationServer::ServerNotEnoughParansException();
+        exit (FILE_ERROR);
+    }
+
+    std::vector<std::string> *new_try_files = new std::vector<std::string>();
+
+    std::cout << "dir is " << dirPath << std::endl << "Files: " << std::endl;
+    if ((dir = opendir(dirPath.c_str())) != NULL)
+    {
+        /* print all the files and directories within directory */
+        std::cout << "Dir opened" << std::endl;
+        while ((ent = readdir (dir)) != NULL)
+        {
+            std::cout << ent->d_name << " " << (int)ent->d_type << " | ";
+            if ((int)ent->d_type == 8 && (findFileInDirectory(lastLocation, ent->d_name)))
+            {
+                new_try_files->push_back(dirPath + ent->d_name);
+                std::cout << "Found " << dirPath << ent->d_name << std::endl;
+                break;
+            }
+        }
+        delete lastLocation.try_files;
+        lastLocation.try_files = new_try_files;
+        std::cout << std::endl;
+        closedir (dir);
+    }
+    else
+    {
+        /* could not open directory */
+        std::cout << "no dir found" << std::endl;
+    }
+}
+
 void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
 {
     location &lastLocation = this->getLastLocation();
     if (line[0] == "autoindex")
     {
-        if (line[1] == "on" && line[2] == ";")
+        if ((line[1] == "on" && line[2] == ";") || (line[1] == "on;"))
+        {
             lastLocation.autoindex = true;
-        else if (line[1] == "on;")
-            lastLocation.autoindex = true;
+        }
         else if (line[1] == "off" && line[2] == ";")
             lastLocation.autoindex = false;
         else if (line[1] == "off;")
@@ -586,6 +658,7 @@ std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
         os << locationVec[i].route << "] with errorCode: [" << locationVec[i].errorCode;
         os << "] cgi: [" << locationVec[i].fastcgi_pass;
         os << "] cgi_include: [" << locationVec[i].fastcgi_include;
+        os << "] autoindex: [" << locationVec[i].autoindex;
         if (locationVec[i].try_files != NULL)
         {
             os << "] try_files: [";
@@ -597,10 +670,14 @@ std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
         os << "] methods: [";
         std::set<std::string>::iterator it = locationVec[i].methods.begin();
         std::set<std::string>::iterator itEnd = locationVec[i].methods.end();
+        int size = locationVec[i].methods.size();
         while (it != itEnd)
         {
             os << *it << " ";
+            if (size - 1 > 0)
+                os << "] [";
             it++;
+            size--;
         }
         os << "]" << std::endl;
     }

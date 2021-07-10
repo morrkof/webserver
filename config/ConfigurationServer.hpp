@@ -87,6 +87,8 @@ class ConfigurationServer
         void    updateLocation(std::vector<std::string> &line);
 
 		void	checkFilledServer();
+        void    fillTryFilesByAuto();
+        bool    findFileInDirectory(location &lastLocation, std::string fileName);
 
         class ServerParserException : public std::exception
         {

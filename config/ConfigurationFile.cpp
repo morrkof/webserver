@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/10 12:11:26 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/10 14:07:09 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,8 @@ void    ConfigurationFile::parseFile(std::string filename)
                 map.resetMap();
                 blockBody.clear();
             }
+            else
+                blockBody.push_back(line);
         }
         else
         {
@@ -208,7 +210,12 @@ void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, Configu
     else if (line[0] == "allow_methods")
         server->parseMethods(line);
     else if (line[0] == "}" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+    {
         server->getLastLocation().finished = true;
+        std::cout << "closing location and filling autoindex" << std::endl;
+        if (server->getLastLocation().autoindex == true)
+            server->fillTryFilesByAuto();
+    }
     else
     {
         std::cout << "Error config line: |" << line[0] << "|" << std::endl;
