@@ -649,6 +649,7 @@ std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
         size--;
     }
     os << "]" << std::endl;
+    
 
     std::vector<location> &locationVec = server.getLocationVec();
     os << "locations: " << locationVec.size() << std::endl;

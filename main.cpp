@@ -93,7 +93,6 @@ int main(int argc, char **argv)
 	}
 
 	std::cout << "Got config in main. Servers: " << config->getServers()->size() << std::endl;
-	// std::vector<ConfigurationServer> *servers = config->getServers();
 
 	// /* инициализируем сокеты и создаём массив слушающих сокетов на всех доступных портах  */
 	// std::list<Websocket *> sockets;
