@@ -16,11 +16,12 @@ private:
 	std::string							_contentType;
 	size_t								_responseLen;
 	RequestParsing						_parsedReq;
-	std::vector<ConfigurationServer>	_serversVec;
+	std::vector<ConfigurationServer>	*_serversVec;
+	char 								**_env;
 
 public:
-	Response(RequestParsing req, std::vector<ConfigurationServer> servers): _response("") ,_body(""), _errCode("200 ok"), _version(req.getVersion()), _responseLen(0), _parsedReq(req), _serversVec(servers)
-	{prr();generateContentType();parseResponse();};
+	Response(RequestParsing req, std::vector<ConfigurationServer> *server, char **env): _response("") ,_body(""), _errCode("200 ok"), _version(req.getVersion()), _responseLen(0), _parsedReq(req), _serversVec(server), _env(env)
+	{ (void)_env; prr();generateContentType();parseResponse();};
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response() {}

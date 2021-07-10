@@ -15,7 +15,7 @@ Response	&Response::operator=(Response const &equal_op) {
 void		Response::prr() {
 	std::vector<std::string>::iterator it2;
 	std::cout << "@@@@@@@@@@@@@@ 1";
-	for (std::vector<ConfigurationServer>::iterator it = _serversVec.begin() ; it != _serversVec.end(); ++it) {
+	for (std::vector<ConfigurationServer>::iterator it = _serversVec->begin() ; it != _serversVec->end(); ++it) {
 		for (it2 = it->getServerNameVec()->begin() ; it2 != it->getServerNameVec()->end(); ++it2)
 			std::cout << ' ' << *it2;
 		std::cout << "root" << it->getRoot() << std::endl;
@@ -57,6 +57,9 @@ int			Response::generateBody(const char* streamPath, std::string errCode) {
 	std::string		buf;
 	std::ifstream	ifs(streamPath);
 	_errCode = errCode;
+
+	std::cout <<  "!!!!!!!!!!!!!" << streamPath << std::endl;
+
 	if (ifs.is_open() == 0) {
 			std::cout << "file doesn't exist" << std::endl;
 			return 1;
@@ -75,18 +78,22 @@ int			Response::parseBody() {
 		if (generateBody("sites/static/index.html", "200 ok") == 1)
 			return 1;
 	}
-	else if (_parsedReq.getLocation() == "/root_unicorn.jpg") {		// error 404 asks for its unicorn
-		if (generateBody("sites/pics/root_unicorn.jpg", "200 ok") == 1)
-			return 1;
-	}
-	else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
-		if (generateBody("sites/pics/unicorn.jpg", "200 ok") == 1)
-			return 1;
-	}
 	else {														// error 404
-		if (generateBody("sites/error404.html", "404 Not Found") == 1)
+		if (generateBody((_serversVec->front().getRoot() + _parsedReq.getLocation()).c_str(), "200 ok") == 1)
 			return 1;
 	}
+	// else if (_parsedReq.getLocation() == "/root_unicorn.jpg") {		// error 404 asks for its unicorn
+	// 	if (generateBody("sites/pics/root_unicorn.jpg", "200 ok") == 1)
+	// 		return 1;
+	// }
+	// else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
+	// 	if (generateBody("sites/pics/unicorn.jpg", "200 ok") == 1)
+	// 		return 1;
+	// }
+	// else {														// error 404
+	// 	if (generateBody("sites/error404.html", "404 Not Found") == 1)
+	// 		return 1;
+	// }
 	return 0;
 }
 
