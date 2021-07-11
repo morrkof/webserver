@@ -30,24 +30,30 @@ public:
 	~Response() {};
 	Response() {}
 	Response		&operator=(Response const &equal_op);
-// cat errors
-	std::string		cgiCatGeneratePage(int code);
+
 // generate variables
+	std::string		cgiCatGeneratePage(int code);
 	void			printConfigurationServer();
 	std::string		generateContentType();
 	void			setVariables() {printConfigurationServer();generateContentType();}
+
 // getters
 	std::string		getResponse() const {return _response;}
 	std::string		getBody() const {return _body;}
 	size_t			getResponseLen() const {return _responseLen;}
+
 // GET
 	int				generateBody(const char* streamPath, int errCode);
 	int				methodGetFormBody();
 	std::string		generateResponse();
+
+// POST
+	void			methodPost();
 // DELETE
-	int				methodDelete();
+	void			methodDelete();
+
 // choose method
-	int				chooseMethod();
+	void			chooseMethod();
 
 };
 

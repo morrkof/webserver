@@ -24,7 +24,6 @@ std::string	Response::cgiCatGeneratePage(int code)
 	return result; 
 }
 
-
 void		Response::printConfigurationServer() {
 	std::vector<t_listen>::iterator		it1;
 	std::vector<std::string>::iterator	it2;
@@ -154,10 +153,10 @@ int			Response::generateBody(const char* streamPath, int errCode) {
 	return 0;
 }
 
-int			Response::methodGetFormBody() {
+int		Response::methodGetFormBody() {
 	if (_parsedReq.getLocation() == "/") {						// root
 		if (generateBody("sites/static/index.html", 200) == 1)
-			return 1;
+		return 1;
 	}
 	else {														// error 404
 		if (generateBody((_serversVec->front().getRoot() + _parsedReq.getLocation()).c_str(), 200) == 1) {
@@ -178,7 +177,7 @@ int			Response::methodGetFormBody() {
 	// 	if (generateBody("sites/error404.html", "404 Not Found") == 1)
 	// 		return 1;
 	// }
-	return 0;
+	return 0; 
 }
 
 std::string	Response::generateResponse() {
@@ -190,14 +189,14 @@ std::string	Response::generateResponse() {
 		_response.append("Content-Type: ");	// обязательное, без него пытается скачать
 		_response.append(_contentType);
 		_response.append("\n\n");		// один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
-		if (_errCode != 200 && _errCode != 204)
+		if (_errCode != 200)
 			_body = cgiCatGeneratePage(_errCode);
 		_response.append(_body);
 		_responseLen = _response.length();
 	return _response;
 }
 
-int		Response::methodDelete() {
+void		Response::methodDelete() {
 	std::string		fileToRemove = _csRoot + _parsedReq.getLocation();
 	std::cout << "---" << fileToRemove.c_str() << "---" << std::endl;
 	if (remove(fileToRemove.c_str()) != 0) {
@@ -210,26 +209,30 @@ int		Response::methodDelete() {
 		_errCode = 202;
 		_errCodeStr = "202 Accepted";
 	}
-	generateResponse();
-	return 0;
+}
+void			Response::methodPost() {
+
 }
 
-int		Response::chooseMethod() {
+void		Response::chooseMethod() {
 	_csMethod = _parsedReq.getMethod();
 	if (_csMethod == "GET") {
 		methodGetFormBody();
 		generateContentType();
 		generateResponse();
 	}
-	// if (_csMethod == "POST")
+	if (_csMethod == "POST") {
+		methodGetFormBody();
+		methodPost();
+		generateResponse();
+	}
 	else if (_csMethod == "DELETE") {
 		methodDelete();
+		generateResponse();
 	}
 	else {
 		std::cout << "Unknown method: " << _csMethod << " is not possible" << std::endl;
-		return 1;
 	}
-	return 0;
 }
 
 std::ostream&	operator<<(std::ostream	&out, Response &x) {
