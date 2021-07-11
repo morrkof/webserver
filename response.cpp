@@ -222,9 +222,7 @@ void		Response::chooseMethod() {
 		generateResponse();
 	}
 	if (_csMethod == "POST") {
-		methodGetFormBody();
 		methodPost();
-		generateResponse();
 	}
 	else if (_csMethod == "DELETE") {
 		methodDelete();
