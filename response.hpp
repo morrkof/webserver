@@ -11,7 +11,8 @@ class Response {
 private:
 	std::string							_response;
 	std::string							_body;
-	std::string							_errCode;
+	std::string							_errCodeStr;
+	int									_errCode;
 	std::string							_version;
 	std::string							_contentType;
 	size_t								_responseLen;
@@ -23,12 +24,14 @@ private:
 	std::string							_csRoute;
 
 public:
-	Response(RequestParsing req, std::vector<ConfigurationServer> *server, char **env): _response("") ,_body(""), _errCode("200 ok"), _version(req.getVersion()), _responseLen(0), _parsedReq(req), _serversVec(server), _env(env)
+	Response(RequestParsing req, std::vector<ConfigurationServer> *server, char **env): _response("") ,_body(""), _errCodeStr("200 OK"), _errCode(200), _version(req.getVersion()), _responseLen(0), _parsedReq(req), _serversVec(server), _env(env)
 	{ (void)_env; setVariables();chooseMethod();};
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response() {}
 	Response		&operator=(Response const &equal_op);
+// cat errors
+	std::string		cgiCatGeneratePage(int code);
 // generate variables
 	void			printConfigurationServer();
 	std::string		generateContentType();
@@ -38,7 +41,7 @@ public:
 	std::string		getBody() const {return _body;}
 	size_t			getResponseLen() const {return _responseLen;}
 // GET
-	int				generateBody(const char* streamPath, std::string errCode);
+	int				generateBody(const char* streamPath, int errCode);
 	int				methodGetFormBody();
 	std::string		generateResponse();
 // DELETE

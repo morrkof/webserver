@@ -12,6 +12,19 @@ Response	&Response::operator=(Response const &equal_op) {
 	return (*this);
 }
 
+std::string	Response::cgiCatGeneratePage(int code)
+{
+	std::string result;
+	result.append("<html>");
+	result.append("<body style=\"background-color:#000000\">");
+	result.append("<div style=\"display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column;\">");
+	result.append("<div> <img src=\"https://http.cat/");
+	result.append(static_cast< std::ostringstream & >(( std::ostringstream() << std::dec << code ) ).str());
+	result.append(".jpg\"></div></div></body></html>");
+	return result; 
+}
+
+
 void		Response::printConfigurationServer() {
 	std::vector<t_listen>::iterator		it1;
 	std::vector<std::string>::iterator	it2;
@@ -54,7 +67,9 @@ void		Response::printConfigurationServer() {
 				for (it5 = it3->try_files->begin() ; it5 != it3->try_files->end(); ++it5)
 					std::cout << "try_files - " << *it5 << std::endl;
 				_errCode = it3->errorCode;
-				std::cout << "errorCode - " << _errCode << std::endl;
+				_errCodeStr = it3->errorCode;
+				std::cout << "errorCode int - " << _errCode << std::endl;
+				std::cout << "errorCode str - " << _errCodeStr << std::endl;
 				std::cout << "client_body_size - " << it3->client_body_size << std::endl;
 				std::cout << "autoindex - ";
 				if (it3->autoindex)
@@ -118,10 +133,11 @@ std::string	Response::generateContentType() {
 	return _contentType;
 }
 
-int			Response::generateBody(const char* streamPath, std::string errCode) {
+int			Response::generateBody(const char* streamPath, int errCode) {
 	std::string		buf;
 	std::ifstream	ifs(streamPath);
 	_errCode = errCode;
+	_errCodeStr = errCode;
 
 	std::cout <<  "🐝" << streamPath << std::endl;
 
@@ -140,12 +156,15 @@ int			Response::generateBody(const char* streamPath, std::string errCode) {
 
 int			Response::methodGetFormBody() {
 	if (_parsedReq.getLocation() == "/") {						// root
-		if (generateBody("sites/static/index.html", "200 ok") == 1)
+		if (generateBody("sites/static/index.html", 200) == 1)
 			return 1;
 	}
 	else {														// error 404
-		if (generateBody((_serversVec->front().getRoot() + _parsedReq.getLocation()).c_str(), "200 ok") == 1)
+		if (generateBody((_serversVec->front().getRoot() + _parsedReq.getLocation()).c_str(), 200) == 1) {
+			_errCode = 404;
+			_errCodeStr = "404 Not Found";
 			return 1;
+		}
 	}
 	// else if (_parsedReq.getLocation() == "/root_unicorn.jpg") {		// error 404 asks for its unicorn
 	// 	if (generateBody("sites/pics/root_unicorn.jpg", "200 ok") == 1)
@@ -166,11 +185,13 @@ std::string	Response::generateResponse() {
 //	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
 		_response.append(_version);		// HTTP/1.1
 		_response.append(" ");
-		_response.append(_errCode);		// 200 Ok
+		_response.append(_errCodeStr);		// 200 ok
 		_response.append(" ");
 		_response.append("Content-Type: ");	// обязательное, без него пытается скачать
 		_response.append(_contentType);
 		_response.append("\n\n");		// один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
+		if (_errCode != 200 && _errCode != 204)
+			_body = cgiCatGeneratePage(_errCode);
 		_response.append(_body);
 		_responseLen = _response.length();
 	return _response;
@@ -181,11 +202,13 @@ int		Response::methodDelete() {
 	std::cout << "---" << fileToRemove.c_str() << "---" << std::endl;
 	if (remove(fileToRemove.c_str()) != 0) {
 		std::cout << "DELETE: Cannot delete file" << std::endl;
-		_errCode = "204 No content";
+		_errCode = 204;
+		_errCodeStr = "204 No Content";
 	}
 	else {
 		std::cout << "DELETE: successful" << std::endl;
-		_errCode = "202 Accepted";
+		_errCode = 202;
+		_errCodeStr = "202 Accepted";
 	}
 	generateResponse();
 	return 0;
