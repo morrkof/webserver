@@ -18,24 +18,31 @@ private:
 	RequestParsing						_parsedReq;
 	std::vector<ConfigurationServer>	*_serversVec;
 	char 								**_env;
+	std::string							_csMethod;
 	std::string							_csRoot;
 	std::string							_csRoute;
 
 public:
 	Response(RequestParsing req, std::vector<ConfigurationServer> *server, char **env): _response("") ,_body(""), _errCode("200 ok"), _version(req.getVersion()), _responseLen(0), _parsedReq(req), _serversVec(server), _env(env)
-	{ (void)_env; printConfigurationServer();generateContentType();generateResponse();};
+	{ (void)_env; setVariables();chooseMethod();};
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response() {}
 	Response		&operator=(Response const &equal_op);
+// generate variables
 	void			printConfigurationServer();
+	std::string		generateContentType();
+	void			setVariables() {printConfigurationServer();generateContentType();}
+// getters
 	std::string		getResponse() const {return _response;}
 	std::string		getBody() const {return _body;}
 	size_t			getResponseLen() const {return _responseLen;}
-	std::string		generateContentType();
+// GET
 	int				generateBody(const char* streamPath, std::string errCode);
 	int				methodGetFormBody();
 	std::string		generateResponse();
+// choose method
+	int				chooseMethod();
 
 };
 

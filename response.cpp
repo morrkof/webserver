@@ -69,6 +69,7 @@ void		Response::printConfigurationServer() {
 			// for (it6 = it->getMethods().begin() ; it6 != it->getMethods().end(); ++it6)
 			// 		std::cout << "methods - " << *it6 << std::endl;
 			it99 = it->getMethods().begin();
+			_csMethod = *it99;
 			int sizeMethods = it->getMethods().size();
 			std::cout << "Main methods size - " << sizeMethods << std::endl;
 			while (sizeMethods > 0) {
@@ -164,8 +165,6 @@ int			Response::methodGetFormBody() {
 
 std::string	Response::generateResponse() {
 //	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
-		methodGetFormBody();
-		generateContentType();
 		_response.append(_version);		// HTTP/1.1
 		_response.append(" ");
 		_response.append(_errCode);		// 200 Ok
@@ -176,6 +175,22 @@ std::string	Response::generateResponse() {
 		_response.append(_body);
 		_responseLen = _response.length();
 	return _response;
+}
+
+int		Response::chooseMethod() {
+	std::cout << _csMethod << std::endl;
+	if (_csMethod == "GET") {
+		methodGetFormBody();
+		generateContentType();
+		generateResponse();
+	}
+	// if (_csMethod == "POST")
+	// if (_csMethod == "DELETE")
+	else {
+		std::cout << "Unknown method: " << _csMethod << "is not possible" << std::endl;
+		return 1;
+	}
+	return 0;
 }
 
 std::ostream&	operator<<(std::ostream	&out, Response &x) {
