@@ -13,13 +13,13 @@ Response	&Response::operator=(Response const &equal_op) {
 }
 
 void		Response::prr() {
-	std::vector<std::string>::iterator it2;
-	std::cout << "@@@@@@@@@@@@@@ 1";
-	for (std::vector<ConfigurationServer>::iterator it = _serversVec->begin() ; it != _serversVec->end(); ++it) {
-		for (it2 = it->getServerNameVec()->begin() ; it2 != it->getServerNameVec()->end(); ++it2)
-			std::cout << ' ' << *it2;
-		std::cout << "root" << it->getRoot() << std::endl;
-	}
+	// std::vector<std::string>::iterator it2;
+	// std::cout << "@@@@@@@@@@@@@@ 1";
+	// for (std::vector<ConfigurationServer>::iterator it = _serversVec->begin() ; it != _serversVec->end(); ++it) {
+	// 	for (it2 = it->getServerNameVec()->begin() ; it2 != it->getServerNameVec()->end(); ++it2)
+	// 		std::cout << ' ' << *it2;
+	// 	std::cout << "root" << it->getRoot() << std::endl;
+	// }
 }
 
 std::string	Response::generateContentType() {
@@ -49,7 +49,7 @@ std::string	Response::generateContentType() {
 		if (extension.compare(it->first) == 0)
 			_contentType = it->second;
 	}
-	std::cout << "Content type: " << _contentType << std::endl;
+	// std::cout << "Content type: " << _contentType << std::endl;
 	return _contentType;
 }
 
@@ -57,8 +57,6 @@ int			Response::generateBody(const char* streamPath, std::string errCode) {
 	std::string		buf;
 	std::ifstream	ifs(streamPath);
 	_errCode = errCode;
-
-	std::cout <<  "!!!!!!!!!!!!!" << streamPath << std::endl;
 
 	if (ifs.is_open() == 0) {
 			std::cout << "file doesn't exist" << std::endl;
