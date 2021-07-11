@@ -12,15 +12,80 @@ Response	&Response::operator=(Response const &equal_op) {
 	return (*this);
 }
 
-void		Response::prr() {
-	std::vector<std::string>::iterator it2;
-	std::cout << "@@@@@@@@@@@@@@ 1";
-	for (std::vector<ConfigurationServer>::iterator it = _serversVec->begin() ; it != _serversVec->end(); ++it) {
-		for (it2 = it->getServerNameVec()->begin() ; it2 != it->getServerNameVec()->end(); ++it2)
-			std::cout << ' ' << *it2;
-		std::cout << "root" << it->getRoot() << std::endl;
+void		Response::printConfigurationServer() {
+	std::vector<t_listen>::iterator		it1;
+	std::vector<std::string>::iterator	it2;
+	std::vector<location>::iterator		it3;
+	std::set<std::string>::iterator		it4;
+	std::vector<std::string>::iterator	it5;
+	std::set<std::string>::iterator		it6;
+	std::vector<std::string>::iterator	it7;
+	std::set<std::string>::iterator		it99;
+	std::set<std::string>::iterator		itEnd;
+
+	std::cout << "🍦 START:: ConfigurationServer Data 🍦" << std::endl;
+		for (std::vector<ConfigurationServer>::iterator it = _serversVec->begin() ; it != _serversVec->end(); ++it) {
+			// getListenVec
+			it1 = it->getListenVec().begin();
+			int sizeListenVec = it->getListenVec().size();
+			std::cout << "Main methods size - " << sizeListenVec << std::endl;
+			while (sizeListenVec > 0) {
+				std::cout << "port - " << it1->port << std::endl;
+				it1++;
+				sizeListenVec--;
+			}
+			// for (it1 = it->getListenVec().begin() ; it1 != it->getListenVec().end(); ++it1) {
+			// 	std::cout << "port - " << it1->port << std::endl;
+			// }
+			// getServerNameVec
+			for (it2 = it->getServerNameVec()->begin() ; it2 != it->getServerNameVec()->end(); ++it2)
+				std::cout << "Server name - " << *it2 << std::endl;
+			// getRoot
+			_csRoot = it->getRoot();
+			std::cout << "root - " << _csRoot << std::endl;
+			// getLocationVec
+			for (it3 = it->getLocationVec().begin() ; it3 != it->getLocationVec().end(); ++it3) {
+				std::cout << "location : " << std::endl;
+				std::cout << "route - " << it3->route << std::endl;
+				std::cout << "fastcgi include -" << it3->fastcgi_include << std::endl;
+				std::cout << "fastcgi_pass - " << it3->fastcgi_pass << std::endl;
+				for (it4 = it3->methods.begin() ; it4 != it3->methods.end(); ++it4)
+					std::cout << "methods - " << *it4 << std::endl;
+				for (it5 = it3->try_files->begin() ; it5 != it3->try_files->end(); ++it5)
+					std::cout << "try_files - " << *it5 << std::endl;
+				_errCode = it3->errorCode;
+				std::cout << "errorCode - " << _errCode << std::endl;
+				std::cout << "client_body_size - " << it3->client_body_size << std::endl;
+				std::cout << "autoindex - ";
+				if (it3->autoindex)
+					std::cout << "on";
+				std::cout << std::endl;
+				std::cout << "finished - ";
+				if (it3->finished)
+					std::cout << "yes";
+				std::cout << std::endl;
+			}
+			// getMethods
+			// for (it6 = it->getMethods().begin() ; it6 != it->getMethods().end(); ++it6)
+			// 		std::cout << "methods - " << *it6 << std::endl;
+			it99 = it->getMethods().begin();
+			int sizeMethods = it->getMethods().size();
+			std::cout << "Main methods size - " << sizeMethods << std::endl;
+			while (sizeMethods > 0) {
+				std::cout << *it99 << std::endl;
+				it99++;
+				sizeMethods--;
+			}
+			// // getIndexVec
+			for (it7 = it->getIndexVec()->begin() ; it7 != it->getIndexVec()->end(); ++it7)
+					std::cout << "IndexVec - " << *it7 << std::endl;
+			// getReturnAddress
+			std::cout << "Return Address - " << it->getReturnAddress().address << std::endl;
+			std::cout << "Error Code - " << it->getReturnAddress().errorCode << std::endl;
+			std::cout << "🍦" << std::endl;
+		}
+		std::cout << "🍦 END:: ConfigurationServer Data 🍦" << std::endl;
 	}
-}
 
 std::string	Response::generateContentType() {
 	std::string	extension(_parsedReq.getLocation());
@@ -58,7 +123,7 @@ int			Response::generateBody(const char* streamPath, std::string errCode) {
 	std::ifstream	ifs(streamPath);
 	_errCode = errCode;
 
-	std::cout <<  "!!!!!!!!!!!!!" << streamPath << std::endl;
+	std::cout <<  "🐝" << streamPath << std::endl;
 
 	if (ifs.is_open() == 0) {
 			std::cout << "file doesn't exist" << std::endl;
@@ -73,7 +138,7 @@ int			Response::generateBody(const char* streamPath, std::string errCode) {
 	return 0;
 }
 
-int			Response::parseBody() {
+int			Response::methodGetFormBody() {
 	if (_parsedReq.getLocation() == "/") {						// root
 		if (generateBody("sites/static/index.html", "200 ok") == 1)
 			return 1;
@@ -99,6 +164,8 @@ int			Response::parseBody() {
 
 std::string	Response::generateResponse() {
 //	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
+		methodGetFormBody();
+		generateContentType();
 		_response.append(_version);		// HTTP/1.1
 		_response.append(" ");
 		_response.append(_errCode);		// 200 Ok
@@ -108,16 +175,6 @@ std::string	Response::generateResponse() {
 		_response.append("\n\n");		// один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
 		_response.append(_body);
 		_responseLen = _response.length();
-	return _response;
-}
-
-std::string	Response::parseResponse() {
-	parseBody();
-	generateContentType();
-	if (_parsedReq.getLocation() == "/unicorn.jpg")
-		generateResponse();
-	else
-	generateResponse();
 	return _response;
 }
 

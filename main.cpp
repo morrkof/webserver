@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <errno.h>
 
-#define PORT 8080 // это ждём из конфига
+#define PORT 3000 // это ждём из конфига
 
 ConfigurationFile*	getConfig(std::string	fileName)
 {
