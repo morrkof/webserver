@@ -167,8 +167,8 @@ int main(int argc, char **argv, char **env)
 						recv((*it)->getSocket(), buf, len, 0);
 						(*it)->setRequest(buf);
 						std::cout << buf << std::endl; /* тут печать реквеста ДО парсинга */
-						std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
-						std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
+						// std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
+						// std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
 					}
 					/* удаляем обработанный сокет из селектового набора на чтение */
 					FD_CLR((*it)->getSocket(),&fd_read);

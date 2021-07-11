@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AutoIndexPage.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
+/*   By: ppipes <ppipes@student.21-school.ru>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/10 15:19:22 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/10 15:39:34 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/11 19:15:20 by ppipes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,20 @@ AutoIndexPage::AutoIndexPage()
 
 }
 
-AutoIndexPage::AutoIndexPage(std::vector<std::string> files)
+AutoIndexPage::AutoIndexPage(std::string path)
 {
+	std::vector<std::string> files;
+	DIR *dir;
+	dirent *file;
+
+	dir = opendir(path.c_str());
+	while ((file = readdir(dir)) != 0)
+	{
+		files.push_back(file->d_name);
+	}
+	closedir(dir);
+	std::sort(files.begin(), files.end());
+
     std::string preBody = "<html lang=\"en\"><body style=\"background-color:#ece8df; color:#0e0803\">";
     std::string postBody = "</body></html>";
     this->page = "";

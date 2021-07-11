@@ -1,7 +1,8 @@
 NAME = webserv
 CONFIGSRC = ./config/ConfigurationFile.cpp ./config/ConfigurationServer.cpp \
 		./config/MapConfigFile.cpp
-SRC = ./main.cpp $(CONFIGSRC) ./requestParsing.cpp ./response.cpp ./Websocket.cpp
+SRC = ./main.cpp $(CONFIGSRC) ./requestParsing.cpp ./response.cpp ./Websocket.cpp \
+	./AutoIndexPage.cpp
 OBJ = $(SRC:.cpp=.o)
 CFLAGS = -Wall -Wextra -Werror -std=c++98
 

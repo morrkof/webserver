@@ -115,7 +115,7 @@ std::string	Response::generateContentType() {
 		if (extension.compare(it->first) == 0)
 			_contentType = it->second;
 	}
-	std::cout << "Content type: " << _contentType << std::endl;
+	// std::cout << "Content type: " << _contentType << std::endl;
 	return _contentType;
 }
 
