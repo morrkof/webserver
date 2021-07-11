@@ -69,7 +69,6 @@ void		Response::printConfigurationServer() {
 			// for (it6 = it->getMethods().begin() ; it6 != it->getMethods().end(); ++it6)
 			// 		std::cout << "methods - " << *it6 << std::endl;
 			it99 = it->getMethods().begin();
-			_csMethod = *it99;
 			int sizeMethods = it->getMethods().size();
 			std::cout << "Main methods size - " << sizeMethods << std::endl;
 			while (sizeMethods > 0) {
@@ -177,17 +176,34 @@ std::string	Response::generateResponse() {
 	return _response;
 }
 
+int		Response::methodDelete() {
+	std::string		fileToRemove = _csRoot + _parsedReq.getLocation();
+	std::cout << "---" << fileToRemove.c_str() << "---" << std::endl;
+	if (remove(fileToRemove.c_str()) != 0) {
+		std::cout << "DELETE: Cannot delete file" << std::endl;
+		_errCode = "204 No content";
+	}
+	else {
+		std::cout << "DELETE: successful" << std::endl;
+		_errCode = "202 Accepted";
+	}
+	generateResponse();
+	return 0;
+}
+
 int		Response::chooseMethod() {
-	std::cout << _csMethod << std::endl;
+	_csMethod = _parsedReq.getMethod();
 	if (_csMethod == "GET") {
 		methodGetFormBody();
 		generateContentType();
 		generateResponse();
 	}
 	// if (_csMethod == "POST")
-	// if (_csMethod == "DELETE")
+	else if (_csMethod == "DELETE") {
+		methodDelete();
+	}
 	else {
-		std::cout << "Unknown method: " << _csMethod << "is not possible" << std::endl;
+		std::cout << "Unknown method: " << _csMethod << " is not possible" << std::endl;
 		return 1;
 	}
 	return 0;

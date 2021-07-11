@@ -41,6 +41,8 @@ public:
 	int				generateBody(const char* streamPath, std::string errCode);
 	int				methodGetFormBody();
 	std::string		generateResponse();
+// DELETE
+	int				methodDelete();
 // choose method
 	int				chooseMethod();
 
