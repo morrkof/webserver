@@ -16,15 +16,16 @@
 
 typedef struct  s_listen
 {
-    //int         host;
-    int         port;
+    std::string         host;
+    int                 port;
 }       t_listen;
 
 struct location
 {
     std::string                 route;
+    std::string                 root;
     bool                        autoindex;
-    std::vector<std::string>    *try_files;
+    std::vector<std::string>    try_files;
     bool                        finished;
     int                         errorCode;
     std::string                 fastcgi_include;
@@ -45,10 +46,10 @@ class ConfigurationServer
     private:
         std::vector<t_listen>               listenVec;
         std::string                         root;
-        std::vector<std::string>            *serverNameVec;
+        std::vector<std::string>            serverNameVec;
         std::vector<location>               locationVec;
         std::set<std::string>               methods;
-        std::vector<std::string>            *indexVec;
+        std::vector<std::string>            indexVec;
         bool                                autoIndex;
         returnAddress                       returnAddr;
     
@@ -69,12 +70,12 @@ class ConfigurationServer
         void    addIndex(std::string index);
 
         std::vector<t_listen>         getListenVec();
-        std::vector<std::string>    *getServerNameVec();
+        std::vector<std::string>    &getServerNameVec();
         std::string                 getRoot();
         std::vector<location>       &getLocationVec();
         location&                   getLastLocation();
         std::set<std::string>       getMethods();
-        std::vector<std::string>    *getIndexVec();
+        std::vector<std::string>    &getIndexVec();
         returnAddress               getReturnAddress();
 
         void    parseListen(std::vector<std::string> &line);

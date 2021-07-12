@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigurationFile.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
+/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/10 14:35:56 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/12 10:55:07 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,12 @@ ConfigurationFile::ConfigurationFile()
 
 ConfigurationFile::~ConfigurationFile()
 {
+    // std::cout << "---Cleaning---" << std::endl;
+    // for (unsigned long i = 0; i < this->serverVec->size(); i++)
+    // {
+    //     //delete &this->serverVec[i];
+    //     delete this->serverVec[i].
+    // }
     delete this->serverVec;
 }
 
@@ -35,13 +41,20 @@ ConfigurationFile &ConfigurationFile::operator=(const ConfigurationFile &file)
 
 void    ConfigurationFile::addServer(ConfigurationServer *server)
 {
+    // std::cout << "adding server: " << std::endl;
+    // std::cout << *server;
+    // std::cout << "adding server end" << std::endl;
     if (this->serverVec == NULL)
     {
-        this->serverVec = new std::vector<ConfigurationServer>();
-        this->serverVec->assign(1, *server);
+        this->serverVec = new std::vector<ConfigurationServer>(1, *server);
+        //this->serverVec->assign(1, *server);
     }
     else
+    {
+        // std::cout << "pushing back to the size of " << this->serverVec->size() << std::endl;
         this->serverVec->push_back(*server);
+        // std::cout << "pushing success" << std::endl;
+    }
 }
 
 std::vector<ConfigurationServer>    *ConfigurationFile::getServers()
@@ -130,7 +143,7 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     
     ConfigurationServer *server = new ConfigurationServer();
 
-    // std::cout << "----new server created" << std::endl;
+    // std::cout << "----new server created" << std::endl; 
 
     while (it != itEnd)
     {
@@ -146,12 +159,14 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     }
 
     //std::cout << "Config block ready." << std::endl;
-    // std::cout << "----adding server" << std::endl;
+    // std::cout << "----checking server" << std::endl;
 	server->checkFilledServer();
+    // std::cout << "----adding server" << std::endl;
     this->addServer(server);
-    // std::cout << "----server added" << std::endl;
+    // std::cout << "----server added" << std::endl << std::endl;
     // std::cout << "---CHECK PARSING-----" << std::endl << *(this->getServers()->begin());
     // std::cout << "---CHECK PARSING END-" << std::endl;
+    delete server;
 }
 
 bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
@@ -187,8 +202,12 @@ void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, Configu
         server->parseListen(line);
     else if (line[0] == "server_name")
         server->parseServerName(line);
+    else if (line[0] == "root" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->updateLocation(line);
     else if (line[0] == "root")
         server->parseRoot(line);
+    else if (line[0] == "index" && server->getLocationVec().size() > 0 && server->getLastLocation().finished == false)
+        server->updateLocation(line);
     else if (line[0] == "index")
         server->parseIndex(line);
     else if (line[0] == "location")

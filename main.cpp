@@ -31,6 +31,7 @@ ConfigurationFile*	getConfig(std::string	fileName)
 	for (unsigned long i = 0; i < servers->size(); i++)
 	{
 		std::cout << servers->at(i);
+		std::cout << "--------------------------------------" << std::endl;
 	}
 
 	return configParser;
