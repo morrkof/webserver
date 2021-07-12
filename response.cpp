@@ -20,6 +20,7 @@ void Response::methodGet() {
 		methodGetFormBody();
 		generateContentType();
 		_errCodeStr = "200 Ok"; // лучше ставить внутри
+
 	}
 	else {
 		_errCode = 405;
@@ -39,12 +40,7 @@ void Response::methodPost() {
 		** Content-type = application/x-www-form-urlencoded ? запускаем CGI
 		** CGI с ошибкой? - 502 Bad Gateway
 		*/
-		if (!_server->getReturnAddress().address.empty()) { // если строка заполнена
-			_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", _server->getReturnAddress().address));
-			_errCode = 301;
-			_errCodeStr = "301 Moved Permanently";
-			_body = CatGeneratePage(_errCode);
-		}
+
 	}
 	else {
 		_errCode = 405;
@@ -58,14 +54,11 @@ void Response::methodDelete() {
 	{
 		_csRoot = _server->getRoot();
 		std::string		fileToRemove = _csRoot + _parsedReq.getLocation();
-		// std::cout << "---" << fileToRemove.c_str() << "---" << std::endl;
 		if (remove(fileToRemove.c_str()) != 0) {
-			// std::cout << "DELETE: Cannot delete file" << std::endl;
 			_errCode = 204;
 			_errCodeStr = "204 No Content";
 		}
 		else {
-			// std::cout << "DELETE: successful" << std::endl;
 			_errCode = 202;
 			_errCodeStr = "202 Accepted";
 		}
@@ -130,7 +123,6 @@ int			Response::generateBody(const char* streamPath, int errCode) {
 	std::ifstream	ifs(streamPath);
 	_errCode = errCode;
 	_errCodeStr = errCode;
-
 	// std::cout <<  "🐝" << streamPath << std::endl;
 	// + если нет прав на открытие файла - 403 error
 	if (ifs.is_open() == 0) {
@@ -158,16 +150,29 @@ std::string	Response::CatGeneratePage(int code) {
 }
 
 int		Response::methodGetFormBody() {
+	std::string		adr = _server->getReturnAddress().address;
 	_errCode = 200;
 	_errCodeStr = "200 Ok";
-	if (_server->getLocationVec()[0].autoindex)
-	{
+	if (_server->getLocationVec()[0].autoindex) {
 		AutoIndexPage page(_server->getRoot()); // + что-то, надо подумать
 		_body = page.getPage();
 		return 1;
-	}	
-	// + if redirect - 301 err + Location header
-	// if оканчивается на .php - CGI 
+	}
+	if (!adr.empty()) { // если строка заполнена
+		// if оканчивается на .php - CGI
+		if (adr.rfind(".") != std::string::npos) {
+			if (adr.substr(adr.rfind("."), std::string::npos) == ".php") {
+				_body = cgi_process(_server->getLastLocation().fastcgi_pass, adr, "", _env);
+				_errCode = 200;
+				_errCodeStr = "200 OK";
+		}}
+		else { // if - папка
+			_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", adr));
+			_body = CatGeneratePage(_errCode);
+			_errCode = 301;
+			_errCodeStr = "301 Moved Permanently";
+		}
+	}
 	if (_parsedReq.getLocation() == "/") {						// root + try_files в цикле
 		if (generateBody("sites/static/index.html", 200) == 1)
 		return 1;
