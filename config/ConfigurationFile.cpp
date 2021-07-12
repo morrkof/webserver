@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigurationFile.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
+/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/10 19:23:32 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/12 09:51:25 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@ ConfigurationFile::ConfigurationFile()
 
 ConfigurationFile::~ConfigurationFile()
 {
+    for (unsigned long i = 0; i < this->serverVec->size(); i++)
+    {
+        delete &this->serverVec[i];
+    }
     delete this->serverVec;
 }
 
@@ -35,9 +39,9 @@ ConfigurationFile &ConfigurationFile::operator=(const ConfigurationFile &file)
 
 void    ConfigurationFile::addServer(ConfigurationServer *server)
 {
-    std::cout << "adding server: " << std::endl;
-    std::cout << *server;
-    std::cout << "adding server end" << std::endl;
+    // std::cout << "adding server: " << std::endl;
+    // std::cout << *server;
+    // std::cout << "adding server end" << std::endl;
     if (this->serverVec == NULL)
     {
         this->serverVec = new std::vector<ConfigurationServer>(1, *server);
@@ -45,9 +49,9 @@ void    ConfigurationFile::addServer(ConfigurationServer *server)
     }
     else
     {
-        std::cout << "pushing back to the size of " << this->serverVec->size() << std::endl;
-        //this->serverVec->push_back(*server);
-        std::cout << "pushing success" << std::endl;
+        // std::cout << "pushing back to the size of " << this->serverVec->size() << std::endl;
+        this->serverVec->push_back(*server);
+        // std::cout << "pushing success" << std::endl;
     }
 }
 
@@ -137,7 +141,7 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     
     ConfigurationServer *server = new ConfigurationServer();
 
-    // std::cout << "----new server created" << std::endl;
+    // std::cout << "----new server created" << std::endl; 
 
     while (it != itEnd)
     {
@@ -153,11 +157,11 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     }
 
     //std::cout << "Config block ready." << std::endl;
-    std::cout << "----checking server" << std::endl;
+    // std::cout << "----checking server" << std::endl;
 	server->checkFilledServer();
-    std::cout << "----adding server" << std::endl;
+    // std::cout << "----adding server" << std::endl;
     this->addServer(server);
-    std::cout << "----server added" << std::endl << std::endl;
+    // std::cout << "----server added" << std::endl << std::endl;
     // std::cout << "---CHECK PARSING-----" << std::endl << *(this->getServers()->begin());
     // std::cout << "---CHECK PARSING END-" << std::endl;
 }
@@ -180,12 +184,12 @@ bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
 
 void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, ConfigurationServer *server)
 {
-    // std::cout << "line: ";
-    // for (unsigned long i = 0; i < line.size(); i++)
-    // {
-    //     std::cout << line[i] << " ";
-    // }
-    // std::cout << std::endl;
+    std::cout << "line: ";
+    for (unsigned long i = 0; i < line.size(); i++)
+    {
+        std::cout << line[i] << " ";
+    }
+    std::cout << std::endl;
     // if (server->getIndexVec() != NULL)
     // {
     //     std::cout << "has indeces" << std::endl;

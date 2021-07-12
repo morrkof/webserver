@@ -21,12 +21,12 @@ ConfigurationServer::ConfigurationServer()
 
 ConfigurationServer::~ConfigurationServer()
 {
-	delete this->serverNameVec;
-	delete this->indexVec;
-	for (unsigned long i = 0; i < this->locationVec.size(); i++)
-	{
-		delete locationVec[i].try_files;
-	}
+	// delete this->serverNameVec;
+	// delete this->indexVec;
+	// for (unsigned long i = 0; i < this->locationVec.size(); i++)
+	// {
+	// 	delete locationVec[i].try_files;
+	// }
 }
 
 ConfigurationServer::ConfigurationServer(const ConfigurationServer &config)
@@ -599,16 +599,23 @@ void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
     {
         returnAddress   returnAddress;
         
-        //TODO: check if number
-        returnAddress.errorCode = std::atoi(line[1].c_str());
-        returnAddress.address = line[2];
+        int errorCode = std::atoi(line[1].c_str());
+        if (errorCode < 1 || errorCode > 1000)
+        {
+            throw ConfigurationServer::ServerParserException();
+            exit (SYNTAX_ERROR);
+        }
+        this->returnAddr.errorCode = errorCode;
+        if (line[2][line[2].size() - 1] == ';')
+            line[2].assign(line[2].begin(), line[2].end() - 1);
+        this->returnAddr.address = line[2];
     }
     else
     {
         throw ConfigurationServer::ServerParserException();
         exit(SYNTAX_ERROR);
     }
-    //std::cout << "---------Success return: " << this->returnAddr.errorCode << std::endl;
+    std::cout << "---------Success return: " << this->returnAddr.errorCode << std::endl;
 }
 
 void    ConfigurationServer::parseMethods(std::vector<std::string> &line)
@@ -651,7 +658,7 @@ void    ConfigurationServer::parseMethods(std::vector<std::string> &line)
 void	ConfigurationServer::checkFilledServer()
 {
 	if (this->serverNameVec->size() == 0 || this->indexVec->size() == 0 ||
-			this->root == "" || this->locationVec.size() == 0)
+			this->root == "" || this->listenVec.size() == 0)
 	{
 		throw ConfigurationServer::ServerNotEnoughParansException();
 		exit(SYNTAX_ERROR);
@@ -734,8 +741,11 @@ std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
         size--;
     }
     os << "]" << std::endl;
-    
-
+    if (server.getReturnAddress().address != "")
+    {
+        os << "return address: [" << server.getReturnAddress().address
+            << "] code: [" << server.getReturnAddress().errorCode << "]" << std::endl;
+    }
     std::vector<location> &locationVec = server.getLocationVec();
     os << "locations: " << locationVec.size() << std::endl;
     for (unsigned long i = 0; i < locationVec.size(); i++)
