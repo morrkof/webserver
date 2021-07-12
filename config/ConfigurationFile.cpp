@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/12 10:39:11 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/12 10:55:07 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ ConfigurationFile::ConfigurationFile()
 
 ConfigurationFile::~ConfigurationFile()
 {
-    std::cout << "---Cleaning---" << std::endl;
+    // std::cout << "---Cleaning---" << std::endl;
     // for (unsigned long i = 0; i < this->serverVec->size(); i++)
     // {
     //     //delete &this->serverVec[i];

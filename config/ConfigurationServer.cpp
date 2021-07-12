@@ -21,7 +21,7 @@ ConfigurationServer::ConfigurationServer()
 
 ConfigurationServer::~ConfigurationServer()
 {
-    std::cout << "----deleting a server----" << std::endl;
+    // std::cout << "----deleting a server----" << std::endl;
     // this->serverNameVec->clear();
     // this->indexVec->clear();
 	// delete this->serverNameVec;
