@@ -26,13 +26,13 @@ ConfigurationFile*	getConfig(std::string	fileName)
 	std::cout << "Start parse config" << std::endl;
 	configParser->parseFile(fileName);
 	std::cout << "Finish parse config" << std::endl;
-	std::vector<ConfigurationServer> *servers = configParser->getServers();
-	std::cout << "Got servers: " << servers->size() << std::endl;
-	for (unsigned long i = 0; i < servers->size(); i++)
-	{
-		std::cout << servers->at(i);
-		std::cout << "--------------------------------------" << std::endl;
-	}
+	// std::vector<ConfigurationServer> *servers = configParser->getServers();
+	// std::cout << "Got servers: " << servers->size() << std::endl;
+	// for (unsigned long i = 0; i < servers->size(); i++)
+	// {
+	// 	std::cout << servers->at(i);
+	// 	std::cout << "--------------------------------------" << std::endl;
+	// }
 
 	return configParser;
 }
@@ -188,5 +188,8 @@ int main(int argc, char **argv)
 	// 		}
 	// 	}
 	// }
-	// return 0;
+	
+	delete config;
+	
+	return 0;
 }

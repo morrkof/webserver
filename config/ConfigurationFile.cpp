@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/12 09:51:25 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/12 10:39:11 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,12 @@ ConfigurationFile::ConfigurationFile()
 
 ConfigurationFile::~ConfigurationFile()
 {
-    for (unsigned long i = 0; i < this->serverVec->size(); i++)
-    {
-        delete &this->serverVec[i];
-    }
+    std::cout << "---Cleaning---" << std::endl;
+    // for (unsigned long i = 0; i < this->serverVec->size(); i++)
+    // {
+    //     //delete &this->serverVec[i];
+    //     delete this->serverVec[i].
+    // }
     delete this->serverVec;
 }
 
@@ -164,6 +166,7 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     // std::cout << "----server added" << std::endl << std::endl;
     // std::cout << "---CHECK PARSING-----" << std::endl << *(this->getServers()->begin());
     // std::cout << "---CHECK PARSING END-" << std::endl;
+    delete server;
 }
 
 bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
@@ -184,12 +187,12 @@ bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
 
 void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, ConfigurationServer *server)
 {
-    std::cout << "line: ";
-    for (unsigned long i = 0; i < line.size(); i++)
-    {
-        std::cout << line[i] << " ";
-    }
-    std::cout << std::endl;
+    // std::cout << "line: ";
+    // for (unsigned long i = 0; i < line.size(); i++)
+    // {
+    //     std::cout << line[i] << " ";
+    // }
+    // std::cout << std::endl;
     // if (server->getIndexVec() != NULL)
     // {
     //     std::cout << "has indeces" << std::endl;
