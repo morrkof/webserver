@@ -31,19 +31,44 @@ void Response::methodGet() {
 void Response::methodPost() {
 	if (_server->getMethods().count("POST"))
 	{
-		/* Размер тела превышает допустимый? 413 ошибка
-		** Content-type = multipart/form-data bla-bla-bla ? загружаем файл на сервер
-		** Норм? - 201
-		** Уже есть? 303 + Location header 
-		** остальные ошибки - 500 Internal Server Error
-		** Content-type = application/x-www-form-urlencoded ? запускаем CGI
-		** CGI с ошибкой? - 502 Bad Gateway
-		*/
-		if (!_server->getReturnAddress().address.empty()) { // если строка заполнена
-			_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", _server->getReturnAddress().address));
-			_errCode = 301;
-			_errCodeStr = "301 Moved Permanently";
-			_body = CatGeneratePage(_errCode);
+		if (_location.client_body_size != -1)
+		{
+			if (_parsedReq.getBody().size() > (size_t)_location.client_body_size)
+			{
+				_errCode = 413;
+				_errCodeStr = "413 Request Entity Too Large";
+			}
+		}
+		else
+		{
+			if (_parsedReq.getMapHeaders().count("Content-Type"))
+			{
+				if (_parsedReq.getMapHeaders()["Content-Type"] == "application/x-www-form-urlencoded")
+				{
+					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(),
+					_parsedReq.getBody(), _env);
+					if (_body.size() == 0)
+					{
+						_errCode = 502;
+						_errCodeStr = "502 Bad Gateway";
+					}
+				}
+				else
+				{
+					std::ofstream ofs((_server->getRoot() + _parsedReq.getLocation()).c_str());
+					if (!ofs)
+					{
+						_errCode = 500;
+						_errCodeStr = "500 Internal Server Error";
+					}
+					else
+					{
+						ofs << _parsedReq.getBody();
+						_errCode = 201;
+						_errCodeStr = "201 Created";
+					}
+				}
+			}
 		}
 	}
 	else {
