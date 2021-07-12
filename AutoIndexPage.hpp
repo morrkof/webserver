@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   AutoIndexPage.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ppipes <ppipes@student.21-school.ru>       +#+  +:+       +#+        */
+/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/10 14:57:15 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/11 19:08:09 by ppipes           ###   ########.fr       */
+/*   Updated: 2021/07/12 16:16:59 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class AutoIndexPage
 {
 	private:
 		std::string                 page;
+		bool						isDir;
 
         AutoIndexPage();
 	
