@@ -96,8 +96,19 @@ int main(int argc, char **argv, char **env)
 
 	/* инициализируем сокеты и создаём массив слушающих сокетов на всех доступных портах  */
 	std::list<Websocket *> sockets;
-	Websocket *s = new Websocket(socket_init(PORT), LISTEN, config->getServers(), env); // TODO: массив портов и цикл по ним
-	sockets.push_back(s);
+	Websocket *s;
+	for (std::vector<ConfigurationServer>::iterator it = config->getServers()->begin(); it != config->getServers()->end(); ++it)
+	{
+		ConfigurationServer *temp = &(*it);
+		std::vector<t_listen> ports = temp->getListenVec();
+		for (std::vector<t_listen>::iterator it2 = ports.begin(); it2 != ports.end(); it2++)
+		{
+			s = new Websocket(socket_init((*it2).port), LISTEN, temp, env);
+			sockets.push_back(s);
+		}
+	}
+	
+	
 	std::cout << "🦄 Waiting for connect\n";
 
 	/* переменные для селекта */
@@ -155,7 +166,7 @@ int main(int argc, char **argv, char **env)
 						unsigned int address_size = sizeof(client_addr);
 						int conn = accept((*it)->getSocket(), (sockaddr *) &client_addr, &address_size);
 						fcntl(conn, F_SETFL, O_NONBLOCK);
-						Websocket *s = new Websocket(conn, READ, config->getServers(), env);
+						Websocket *s = new Websocket(conn, READ, (*it)->getServer(), env);
 						sockets.push_back(s);
 					}
 					/* если это сокет данных, то читаем запрос и формируем ответ, внутри класса пометка READ превратится во WRITE */
@@ -166,7 +177,7 @@ int main(int argc, char **argv, char **env)
 						memset(buf, 0, len);
 						recv((*it)->getSocket(), buf, len, 0);
 						(*it)->setRequest(buf);
-						std::cout << buf << std::endl; /* тут печать реквеста ДО парсинга */
+						// std::cout << buf << std::endl; /* тут печать реквеста ДО парсинга */
 						// std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
 						// std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
 					}

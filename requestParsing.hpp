@@ -32,7 +32,7 @@ public:
 private:
 	
 	int			parseMeLikeYouDo();
-	void		_errorMethodDoesntExist();
+	// void		_errorMethodDoesntExist();
 	int			chooseMethod();
 	int			chooseLocation();
 	int			chooseVersion();

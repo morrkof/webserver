@@ -24,7 +24,7 @@ std::map<std::string,std::string>	&RequestParsing::getMapHeaders() {return _mapH
 
 std::string	RequestParsing::getBody() const {return _body;}
 
-void	RequestParsing::_errorMethodDoesntExist() {std::cout << "Error: method doesn't exist" << std::endl;}
+// void	RequestParsing::_errorMethodDoesntExist() {std::cout << "Error: method doesn't exist" << std::endl;}
 
 int		RequestParsing::chooseMethod() {
 	std::string	methodsAll[3] = {"GET", "POST", "DELETE"};
@@ -32,7 +32,7 @@ int		RequestParsing::chooseMethod() {
 	size_t		i = 0;
 	while (i < 3 && _method != methodsAll[i]) i++;
 	if (i == 3) {
-		_errorMethodDoesntExist();
+		// _errorMethodDoesntExist();
 		return 1;
 	}
 	_posNext = _dataFull.find(" ") + 1; // _posNext now equals the first symbol of the location
@@ -97,7 +97,7 @@ int		RequestParsing::fillMapHeaders() {
 
 int		RequestParsing::chooseBody() {
 	if (_mapHeaders.find("Content-Length") == _mapHeaders.end()) {
-		std::cout << "The body is not found" << std::endl;
+		// std::cout << "The body is not found" << std::endl;
 		return 0;
 	}
 	_dataNext = _dataNext.substr(_posNext + 1, std::string::npos);
