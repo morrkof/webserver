@@ -23,7 +23,7 @@ void Response::methodGet() {
 	}
 	else {
 		_errCode = 405;
-		_errCodeStr = "Method Not Allowed";
+		_errCodeStr = "405 Method Not Allowed";
 	}
 	generateResponse();
 }
@@ -38,11 +38,17 @@ void Response::methodPost() {
 		** остальные ошибки - 500 Internal Server Error
 		** Content-type = application/x-www-form-urlencoded ? запускаем CGI
 		** CGI с ошибкой? - 502 Bad Gateway
-		*/ 
+		*/
+		if (!_server->getReturnAddress().address.empty()) { // если строка заполнена
+			_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", _server->getReturnAddress().address));
+			_errCode = 301;
+			_errCodeStr = "301 Moved Permanently";
+			_body = CatGeneratePage(_errCode);
+		}
 	}
 	else {
 		_errCode = 405;
-		_errCodeStr = "Method Not Allowed";
+		_errCodeStr = "405 Method Not Allowed";
 	}
 	generateResponse();
 }
@@ -66,7 +72,7 @@ void Response::methodDelete() {
 	}
 	else {
 		_errCode = 405;
-		_errCodeStr = "Method Not Allowed";
+		_errCodeStr = "405 Method Not Allowed";
 	}
 	_contentType = "text/html";
 	generateResponse();
@@ -140,8 +146,7 @@ int			Response::generateBody(const char* streamPath, int errCode) {
 	return 0;
 }
 
-std::string	Response::CatGeneratePage(int code)
-{
+std::string	Response::CatGeneratePage(int code) {
 	std::string result;
 	result.append("<html>");
 	result.append("<body style=\"background-color:#000000\">");
@@ -174,22 +179,8 @@ int		Response::methodGetFormBody() {
 			return 1;
 		}
 	}
-	// else if (_parsedReq.getLocation() == "/root_unicorn.jpg") {		// error 404 asks for its unicorn
-	// 	if (generateBody("sites/pics/root_unicorn.jpg", "200 ok") == 1)
-	// 		return 1;
-	// }
-	// else if (_parsedReq.getLocation() == "/unicorn.jpg") {		// error 404 asks for its unicorn
-	// 	if (generateBody("sites/pics/unicorn.jpg", "200 ok") == 1)
-	// 		return 1;
-	// }
-	// else {														// error 404
-	// 	if (generateBody("sites/error404.html", "404 Not Found") == 1)
-	// 		return 1;
-	// }
 	return 0; 
 }
-
-
 
 /*
 **	params = "a=b";
@@ -245,10 +236,17 @@ Response	&Response::operator=(Response const &equal_op) {
 	if (this != &equal_op) {
 		this->_response = equal_op._response;
 		this->_body = equal_op._body;
+		this->_errCodeStr = equal_op._errCodeStr;
 		this->_errCode = equal_op._errCode;
 		this->_version = equal_op._version;
+		this->_contentType = equal_op._contentType;
 		this->_responseLen = equal_op._responseLen;
 		this->_parsedReq = equal_op._parsedReq;
+		this->_server = equal_op._server;
+		this->_env = equal_op._env;
+		this->_csMethod = equal_op._csMethod;
+		this->_csRoot = equal_op._csRoot;
+		this->_csRoute = equal_op._csRoute;
 	}
 	return (*this);
 }
@@ -259,87 +257,3 @@ std::ostream&	operator<<(std::ostream	&out, Response &x) {
 	out << "🌠 END:: show response 🌠" << std::endl << std::endl;
 	return (out);
 }
-
-
-
-
-/* Вектора больше нет, в каждом Респонсе только один ТОТ САМЫЙ экземпляр сервера */
-
-
-
-// void		Response::printConfigurationServer() {
-// 	std::vector<t_listen>::iterator		it1;
-// 	std::vector<std::string>::iterator	it2;
-// 	std::vector<location>::iterator		it3;
-// 	std::set<std::string>::iterator		it4;
-// 	std::vector<std::string>::iterator	it5;
-// 	std::set<std::string>::iterator		it6;
-// 	std::vector<std::string>::iterator	it7;
-// 	std::set<std::string>::iterator		it99;
-// 	std::set<std::string>::iterator		itEnd;
-
-// 	std::cout << "🍦 START:: ConfigurationServer Data 🍦" << std::endl;
-// 		for (std::vector<ConfigurationServer>::iterator it = _serversVec->begin() ; it != _serversVec->end(); ++it) {
-// 			// getListenVec
-// 			it1 = it->getListenVec().begin();
-// 			int sizeListenVec = it->getListenVec().size();
-// 			std::cout << "Main methods size - " << sizeListenVec << std::endl;
-// 			while (sizeListenVec > 0) {
-// 				std::cout << "port - " << it1->port << std::endl;
-// 				it1++;
-// 				sizeListenVec--;
-// 			}
-// 			// for (it1 = it->getListenVec().begin() ; it1 != it->getListenVec().end(); ++it1) {
-// 			// 	std::cout << "port - " << it1->port << std::endl;
-// 			// }
-// 			// getServerNameVec
-// 			for (it2 = it->getServerNameVec()->begin() ; it2 != it->getServerNameVec()->end(); ++it2)
-// 				std::cout << "Server name - " << *it2 << std::endl;
-// 			// getRoot
-// 			_csRoot = it->getRoot();
-// 			std::cout << "root - " << _csRoot << std::endl;
-// 			// getLocationVec
-// 			for (it3 = it->getLocationVec().begin() ; it3 != it->getLocationVec().end(); ++it3) {
-// 				std::cout << "location : " << std::endl;
-// 				std::cout << "route - " << it3->route << std::endl;
-// 				std::cout << "fastcgi include -" << it3->fastcgi_include << std::endl;
-// 				std::cout << "fastcgi_pass - " << it3->fastcgi_pass << std::endl;
-// 				for (it4 = it3->methods.begin() ; it4 != it3->methods.end(); ++it4)
-// 					std::cout << "methods - " << *it4 << std::endl;
-// 				for (it5 = it3->try_files->begin() ; it5 != it3->try_files->end(); ++it5)
-// 					std::cout << "try_files - " << *it5 << std::endl;
-// 				_errCode = it3->errorCode;
-// 				_errCodeStr = it3->errorCode;
-// 				std::cout << "errorCode int - " << _errCode << std::endl;
-// 				std::cout << "errorCode str - " << _errCodeStr << std::endl;
-// 				std::cout << "client_body_size - " << it3->client_body_size << std::endl;
-// 				std::cout << "autoindex - ";
-// 				if (it3->autoindex)
-// 					std::cout << "on";
-// 				std::cout << std::endl;
-// 				std::cout << "finished - ";
-// 				if (it3->finished)
-// 					std::cout << "yes";
-// 				std::cout << std::endl;
-// 			}
-// 			// getMethods
-// 			// for (it6 = it->getMethods().begin() ; it6 != it->getMethods().end(); ++it6)
-// 			// 		std::cout << "methods - " << *it6 << std::endl;
-// 			it99 = it->getMethods().begin();
-// 			int sizeMethods = it->getMethods().size();
-// 			std::cout << "Main methods size - " << sizeMethods << std::endl;
-// 			while (sizeMethods > 0) {
-// 				std::cout << *it99 << std::endl;
-// 				it99++;
-// 				sizeMethods--;
-// 			}
-// 			// // getIndexVec
-// 			for (it7 = it->getIndexVec()->begin() ; it7 != it->getIndexVec()->end(); ++it7)
-// 					std::cout << "IndexVec - " << *it7 << std::endl;
-// 			// getReturnAddress
-// 			std::cout << "Return Address - " << it->getReturnAddress().address << std::endl;
-// 			std::cout << "Error Code - " << it->getReturnAddress().errorCode << std::endl;
-// 			std::cout << "🍦" << std::endl;
-// 		}
-// 		std::cout << "🍦 END:: ConfigurationServer Data 🍦" << std::endl;
-// 	}

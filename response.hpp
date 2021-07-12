@@ -35,8 +35,7 @@ public:
 	Response(RequestParsing req, ConfigurationServer *server, char **env)
 	: _response("") ,_body(""), _errCodeStr("200 OK"), _errCode(200), 
 	_version(req.getVersion()), _responseLen(0), _parsedReq(req), _server(server), _env(env)
-	// { (void)_env; setVariables();chooseMethod();}
-	{ (void)_env;chooseMethod(); generateContentType();}
+	{ (void)_env; chooseMethod(); generateContentType();}
 
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
@@ -45,20 +44,18 @@ public:
 
 // choose method
 	void			chooseMethod();
-	std::string cgi_process(std::string path, std::string filename, std::string params, char **env);
+	std::string		cgi_process(std::string path, std::string filename, std::string params, char **env);
 
 // generate variables
 	std::string		CatGeneratePage(int code);
-	// void			printConfigurationServer();
 	std::string		generateContentType();
-	// void			setVariables() {printConfigurationServer();generateContentType();}
 
 // getters
 	std::string		getResponse() const {return _response;}
 	std::string		getBody() const {return _body;}
 	size_t			getResponseLen() const {return _responseLen;}
 
-// GET
+// body and response
 	int				generateBody(const char* streamPath, int errCode);
 	int				methodGetFormBody();
 	std::string		generateResponse();
@@ -67,9 +64,6 @@ public:
 	void			methodGet();
 	void			methodPost();
 	void			methodDelete();
-
-
-
 };
 
 std::ostream &operator<<(std::ostream &out, Response &x);
