@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
+#include <algorithm>
 #include "requestParsing.hpp"
 #include "AutoIndexPage.hpp"
 #include "config/ConfigurationServer.hpp"
@@ -30,12 +31,23 @@ private:
 	std::string							_csMethod;
 	std::string							_csRoot;
 	std::string							_csRoute;
+	location							_location;
 
 public:
 	Response(RequestParsing req, ConfigurationServer *server, char **env)
-	: _response("") ,_body(""), _errCodeStr("200 OK"), _errCode(200), 
-	_version(req.getVersion()), _responseLen(0), _parsedReq(req), _server(server), _env(env)
-	{ (void)_env; chooseMethod(); generateContentType();}
+	: _response("") ,_body(""), _errCodeStr("200 OK"), _errCode(200), _version(req.getVersion()), 
+	_contentType("text/html"), _responseLen(0), _parsedReq(req), _server(server), _env(env)
+	{ 
+		(void)_env;
+		_location = _server->getLocationVec()[0];
+		for (std::vector<location>::iterator it = _server->getLocationVec().begin(); it != _server->getLocationVec().end(); ++it)
+		{
+			if (_parsedReq.getLocation() == (*it).route)
+				_location = (*it);
+		}
+		chooseMethod(); 
+		generateContentType();
+	}
 
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
