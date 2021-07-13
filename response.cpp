@@ -1,6 +1,35 @@
 #include "response.hpp"
 
-void		Response::chooseMethod() {
+Response::Response(RequestParsing req, ConfigurationServer *server, char **env)
+	: _response("") ,_body(""), _errCodeStr("200 OK"), _errCode(200), _version(req.getVersion()), 
+	_contentType("text/html"), _responseLen(0), _parsedReq(req), _server(server), _env(env)
+	{
+		bool is_server = false;
+		_location = _server->getLocationVec()[0];
+		for (std::vector<location>::iterator it = _server->getLocationVec().begin(); it != _server->getLocationVec().end(); ++it)
+		{
+			if (_parsedReq.getLocation() == (*it).route)
+				_location = (*it);
+		}
+		_hostname = _parsedReq.getMapHeaders()["Host"].substr(0, _parsedReq.getMapHeaders()["Host"].find(':'));
+		for (std::vector<std::string>::iterator it = _server->getServerNameVec().begin(); it != _server->getServerNameVec().end(); ++it)
+		{
+			if (_hostname == (*it))
+				is_server = true;
+		}
+		if (is_server)
+			chooseMethod(); 
+		else
+		{
+			_errCode = 404;
+			_errCodeStr = "404 Not Found";
+			_contentType = "text/html";
+			generateResponse();
+		}
+	}
+
+void Response::chooseMethod() {
+	generateContentType();
 	_csMethod = _parsedReq.getMethod();
 	if (_csMethod == "GET") methodGet();
 	else if (_csMethod == "POST") methodPost();
@@ -10,21 +39,52 @@ void		Response::chooseMethod() {
 		_errCodeStr = "400 Bad Request";
 		_contentType = "text/html";
 		generateResponse();
-		// std::cout << "Unknown method: " << _csMethod << " is not possible" << std::endl;
 	}
+}
+
+int		Response::methodGetFormBody() {
+	std::string		adr = _server->getReturnAddress().address;
+	if (_server->getLocationVec()[0].autoindex) {
+		AutoIndexPage page(_server->getRoot()); // + что-то, надо подумать
+		_body = page.getPage();
+		return 1;
+	}
+	if (!adr.empty()) { // если строка заполнена
+		// if оканчивается на .php - CGI
+		if (adr.rfind(".") != std::string::npos) {
+			if (adr.substr(adr.rfind("."), std::string::npos) == ".php") {
+				_body = cgi_process(_server->getLastLocation().fastcgi_pass, adr, "", _env);
+				_errCode = 200;
+				_errCodeStr = "200 OK";
+		}}
+		else { // if - папка
+			_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", adr));
+			_body = CatGeneratePage(_errCode);
+			_errCode = 301;
+			_errCodeStr = "301 Moved Permanently";
+		}
+	}
+	if (_parsedReq.getLocation() == "/") {						// root + try_files в цикле
+		if (generateBody("sites/static/index.html") == 1)
+		return 1;
+	}
+	else {														// error 404
+		if (generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str()) == 1) {
+			_errCode = 404;
+			_errCodeStr = "404 Not Found";
+			return 1;
+		}
+	}
+	return 0; 
 }
 
 void Response::methodGet() {
 	if (_server->getMethods().count("GET"))
-	{
 		methodGetFormBody();
-		generateContentType();
-		_errCodeStr = "200 Ok"; // лучше ставить внутри
-
-	}
 	else {
 		_errCode = 405;
 		_errCodeStr = "405 Method Not Allowed";
+		_contentType = "text/html";
 	}
 	generateResponse();
 }
@@ -32,6 +92,7 @@ void Response::methodGet() {
 void Response::methodPost() {
 	if (_server->getMethods().count("POST"))
 	{
+		_contentType = "text/html";
 		if (_location.client_body_size != -1)
 		{
 			if (_parsedReq.getBody().size() > (size_t)_location.client_body_size)
@@ -72,9 +133,11 @@ void Response::methodPost() {
 			}
 		}
 	}
-	else {
+	else 
+	{
 		_errCode = 405;
 		_errCodeStr = "405 Method Not Allowed";
+		_contentType = "text/html";
 	}
 	generateResponse();
 }
@@ -135,6 +198,7 @@ std::string	Response::generateContentType() {
 	types[".js"] = "application/javascript";
 	types[".mp3"] = "audio/mpeg";
 	types[".avi"] = "video/x-msvideo";
+	types[".otf"] =  "font/opentype";
 	if (extension.rfind(".") == std::string::npos) {
 		_contentType = "";
 		return _contentType;
@@ -148,17 +212,17 @@ std::string	Response::generateContentType() {
 	return _contentType;
 }
 
-int			Response::generateBody(const char* streamPath, int errCode) {
+int			Response::generateBody(const char* streamPath) {
 	std::string		buf;
 	std::ifstream	ifs(streamPath);
-	_errCode = errCode;
-	_errCodeStr = errCode;
+
 	// std::cout <<  "🐝" << streamPath << std::endl;
 	// + если нет прав на открытие файла - 403 error
-	if (ifs.is_open() == 0) {
-			std::cout << "file doesn't exist" << std::endl;
-			return 1;
-		}
+	if (ifs.is_open() == 0) 
+	{
+		std::cout << "file doesn't exist" << std::endl;
+		return 1;
+	}
 		while (!ifs.eof()) {
 			std::getline(ifs, buf);
 			_body.append(buf);
@@ -174,48 +238,12 @@ std::string	Response::CatGeneratePage(int code) {
 	result.append("<body style=\"background-color:#000000\">");
 	result.append("<div style=\"display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column;\">");
 	result.append("<div> <img src=\"https://http.cat/");
-	result.append(static_cast< std::ostringstream & >(( std::ostringstream() << std::dec << code ) ).str());
+	result.append(static_cast< std::ostringstream & >((std::ostringstream() << std::dec << code)).str());
 	result.append(".jpg\"></div></div></body></html>");
 	return result; 
 }
 
-int		Response::methodGetFormBody() {
-	std::string		adr = _server->getReturnAddress().address;
-	_errCode = 200;
-	_errCodeStr = "200 Ok";
-	if (_server->getLocationVec()[0].autoindex) {
-		AutoIndexPage page(_server->getRoot()); // + что-то, надо подумать
-		_body = page.getPage();
-		return 1;
-	}
-	if (!adr.empty()) { // если строка заполнена
-		// if оканчивается на .php - CGI
-		if (adr.rfind(".") != std::string::npos) {
-			if (adr.substr(adr.rfind("."), std::string::npos) == ".php") {
-				_body = cgi_process(_server->getLastLocation().fastcgi_pass, adr, "", _env);
-				_errCode = 200;
-				_errCodeStr = "200 OK";
-		}}
-		else { // if - папка
-			_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", adr));
-			_body = CatGeneratePage(_errCode);
-			_errCode = 301;
-			_errCodeStr = "301 Moved Permanently";
-		}
-	}
-	if (_parsedReq.getLocation() == "/") {						// root + try_files в цикле
-		if (generateBody("sites/static/index.html", 200) == 1)
-		return 1;
-	}
-	else {														// error 404
-		if (generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str(), 200) == 1) {
-			_errCode = 404;
-			_errCodeStr = "404 Not Found";
-			return 1;
-		}
-	}
-	return 0; 
-}
+
 
 /*
 **	params = "a=b";

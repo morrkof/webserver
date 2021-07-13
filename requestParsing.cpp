@@ -58,7 +58,7 @@ int		RequestParsing::chooseLocation() {
 int		RequestParsing::chooseVersion() {
 	_dataNext = _dataNext.substr(_posNext, std::string::npos);
 	_version = _dataNext.substr(0, _dataNext.find("\r\n"));
-	_posNext = _dataNext.find("\r\n") + 1; // _posNext now is the symbol of the first header
+	_posNext = _dataNext.find("\r\n") + 2; // _posNext now is the symbol of the first header
 
 	// std::cout << std::endl << "chooseVersion" << std::endl;
 	// std::cout << "posNext 3:	" << _posNext << std::endl;
@@ -76,11 +76,11 @@ int		RequestParsing::fillMapHeaders() {
 	while (_posNext != doubleNewline) {
 		_dataNext = _dataNext.substr(_posNext, std::string::npos);
 		headerKey = _dataNext.substr(0, _dataNext.find(":"));
-		_posNext = _dataNext.find(": ") + 1;
+		_posNext = _dataNext.find(": ") + 2;
 		_dataNext = _dataNext.substr(_posNext, std::string::npos);
 		headerValue = _dataNext.substr(0, _dataNext.find("\r\n"));
-		_posNext = _dataNext.find("\r\n") + 1;
-		doubleNewline = _dataNext.find("\r\n\r\n") + 1;
+		_posNext = _dataNext.find("\r\n") + 2;
+		doubleNewline = _dataNext.find("\r\n\r\n") + 2;
 		_mapHeaders[headerKey] = headerValue;
 
 		// std::cout << "headerKey:	" << headerKey << std::endl;
@@ -91,7 +91,7 @@ int		RequestParsing::fillMapHeaders() {
 	// for (std::map<std::string,std::string>::iterator it = _mapHeaders.begin(); it != _mapHeaders.end(); ++it)
 	// 	std::cout << it->first << ": " << it->second << '\n';
 
-	_posNext = _dataNext.find("\r\n\r\n") + 1;
+	_posNext = _dataNext.find("\r\n\r\n") + 4;
 	return 0;
 }
 

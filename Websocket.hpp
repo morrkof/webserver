@@ -16,10 +16,12 @@ class Websocket
 {
 private:
 	int _socket;
+	size_t _send_offset;
 	socket_type _type;
 	RequestParsing _request;
 	Response _response;
 	ConfigurationServer	*_server;
+	std::string _recv_buf;
 	char **_env;
 
 public:
@@ -34,6 +36,10 @@ public:
 	std::string getResponseChars();
 	size_t getResponseLen();
 	ConfigurationServer *getServer() { return _server; }
+	int getSendOffset();
+	std::string getRecvBuf();
+	void setSendOffset(int bytes);
+	void setRecvBuf(std::string buf);
 
 	void setType(socket_type type);
 	void setRequest(std::string buf);
