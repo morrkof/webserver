@@ -3,19 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   AutoIndexPage.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
+/*   By: ppipes <ppipes@student.21-school.ru>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/10 15:19:22 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/12 16:18:31 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/14 01:18:12 by ppipes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "AutoIndexPage.hpp"
 
-AutoIndexPage::AutoIndexPage()
-{
-
-}
+AutoIndexPage::AutoIndexPage(){}
 
 AutoIndexPage::AutoIndexPage(std::string path)
 {
@@ -54,13 +51,9 @@ AutoIndexPage::AutoIndexPage(std::string path)
 
         this->page += postBody;
         this->isDir = true;
-        closedir(dir);
     }
     else
-    {
-        this->isDir = false;
-        std::cout << "Error: not a directory" << std::endl;
-    }
+		this->isDir = false;
     
 }
 
@@ -70,10 +63,7 @@ AutoIndexPage::AutoIndexPage(AutoIndexPage const &page)
     this->isDir = page.isDir;
 }
 
-AutoIndexPage::~AutoIndexPage()
-{
-
-}
+AutoIndexPage::~AutoIndexPage(){}
 
 AutoIndexPage &AutoIndexPage::operator=(AutoIndexPage const &page)
 {
@@ -83,7 +73,6 @@ AutoIndexPage &AutoIndexPage::operator=(AutoIndexPage const &page)
 	return *this;
 }
 
-std::string    AutoIndexPage::getPage()
-{
-    return this->page;
-}
+std::string    AutoIndexPage::getPage() { return this->page; }
+
+bool AutoIndexPage::getIsDir() { return this->isDir; }

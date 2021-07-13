@@ -42,29 +42,52 @@ void Response::chooseMethod() {
 	}
 }
 
-int		Response::methodGetFormBody() {
-	std::string		adr = _server->getReturnAddress().address;
-	if (_server->getLocationVec()[0].autoindex) {
-		AutoIndexPage page(_server->getRoot()); // + что-то, надо подумать
-		_body = page.getPage();
+int			Response::generateBody(const char* streamPath) {
+	std::string		buf;
+	std::ifstream	ifs(streamPath);
+
+	// std::cout <<  "🐝" << streamPath << std::endl;
+	// + если нет прав на открытие файла - 403 error
+	if (ifs.is_open() == 0) 
+	{
 		return 1;
 	}
-	if (!adr.empty()) { // если строка заполнена
-		// if оканчивается на .php - CGI
-		if (adr.rfind(".") != std::string::npos) {
-			if (adr.substr(adr.rfind("."), std::string::npos) == ".php") {
-				_body = cgi_process(_server->getLastLocation().fastcgi_pass, adr, "", _env);
-				_errCode = 200;
-				_errCodeStr = "200 OK";
-		}}
-		else { // if - папка
-			_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", adr));
-			_body = CatGeneratePage(_errCode);
-			_errCode = 301;
-			_errCodeStr = "301 Moved Permanently";
+		while (!ifs.eof()) {
+			std::getline(ifs, buf);
+			_body.append(buf);
+			_body.append("\n");
 		}
-	}
-	if (_parsedReq.getLocation() == "/") {						// root + try_files в цикле
+	ifs.close();
+	return 0;
+}
+
+int		Response::methodGetFormBody() {
+	std::string		adr = _server->getReturnAddress().address;
+	if (_server->getLocationVec()[0].autoindex) 
+		{
+			AutoIndexPage page(_server->getRoot() + _parsedReq.getLocation());
+			if (page.getIsDir())
+				_body = page.getPage();
+			else
+			{
+				generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str());
+			}
+		}
+	// else if (!adr.empty()) { 
+	// 	if (adr.rfind(".") != std::string::npos) {
+	// 		if (adr.substr(adr.rfind("."), 4) == ".php") {
+	// 			_body = cgi_process(_server->getLastLocation().fastcgi_pass, adr, "", _env);
+	// 			_errCode = 200;
+	// 			_errCodeStr = "200 OK";
+	// 	}}
+	// 	else { // if - папка
+	// 		_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", adr));
+	// 		_body = CatGeneratePage(_errCode);
+	// 		_errCode = 301;
+	// 		_errCodeStr = "301 Moved Permanently";
+	// 	}
+	// }
+	else if (_parsedReq.getLocation() == "/") {						// root + try_files в цикле
 		if (generateBody("sites/static/index.html") == 1)
 		return 1;
 	}
@@ -212,25 +235,7 @@ std::string	Response::generateContentType() {
 	return _contentType;
 }
 
-int			Response::generateBody(const char* streamPath) {
-	std::string		buf;
-	std::ifstream	ifs(streamPath);
 
-	// std::cout <<  "🐝" << streamPath << std::endl;
-	// + если нет прав на открытие файла - 403 error
-	if (ifs.is_open() == 0) 
-	{
-		std::cout << "file doesn't exist" << std::endl;
-		return 1;
-	}
-		while (!ifs.eof()) {
-			std::getline(ifs, buf);
-			_body.append(buf);
-			_body.append("\n");
-		}
-	ifs.close();
-	return 0;
-}
 
 std::string	Response::CatGeneratePage(int code) {
 	std::string result;
