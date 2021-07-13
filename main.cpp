@@ -15,9 +15,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
-#include <errno.h>
 
-#define PORT 8000 // это ждём из конфига
 
 ConfigurationFile*	getConfig(std::string	fileName)
 {
@@ -82,6 +80,7 @@ int	socket_init(int port)
 
 int main(int argc, char **argv, char **env)
 {
+	int status;
 	ConfigurationFile *config;
 
 	/* Пошел сюда конфиг */
@@ -136,8 +135,7 @@ int main(int argc, char **argv, char **env)
 		/* если вернул < 0 = ошибка, всё зачищаем и закрываем и выходим */
 		if (ready_events < 0)
 		{
-			int err = errno;
-			std::cout << "select() failed. Error " << err << " " << strerror(err) << std::endl;
+			std::cout << "select() failed." << std::endl;
 			for (std::list<Websocket *>::iterator it = sockets.begin(); it != sockets.end(); ++it)
 				delete (*it);
 			sockets.clear();
@@ -169,32 +167,62 @@ int main(int argc, char **argv, char **env)
 						fcntl(conn, F_SETFL, O_NONBLOCK);
 						Websocket *s = new Websocket(conn, READ, (*it)->getServer(), env);
 						sockets.push_back(s);
+						FD_CLR((*it)->getSocket(),&fd_read);
 					}
 					/* если это сокет данных, то читаем запрос и формируем ответ, внутри класса пометка READ превратится во WRITE */
 					else
 					{
-						int len = 20000; // TODO брать этот размер из конфига
+						int len = 15;
 						char buf[len];
 						memset(buf, 0, len);
-						recv((*it)->getSocket(), buf, len, 0);
-						(*it)->setRequest(buf);
-						// std::cout << buf << std::endl; /* тут печать реквеста ДО парсинга */
-						// std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
-						// std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
+						status = recv((*it)->getSocket(), buf, len, 0);
+						if (status == -1)
+						{
+							std::cout << "recieve() failed." << std::endl;
+							for (std::list<Websocket *>::iterator it = sockets.begin(); it != sockets.end(); ++it)
+								delete (*it);
+							sockets.clear(); 
+							exit(-1);
+						}
+						else if (status < len)
+						{
+							(*it)->setRecvBuf(buf);
+							(*it)->setRequest((*it)->getRecvBuf());
+							FD_CLR((*it)->getSocket(),&fd_read);
+							std::cout << (*it)->getRecvBuf() << std::endl; /* тут печать реквеста ДО парсинга */
+							// std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
+							// std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
+						}
+						else
+							(*it)->setRecvBuf(buf);
 					}
-					/* удаляем обработанный сокет из селектового набора на чтение */
-					FD_CLR((*it)->getSocket(),&fd_read);
 					++done;
 				}
 				/* если сработал сокет на запись */
 				else if (FD_ISSET((*it)->getSocket(), &fd_write))
 				{
 					/* отправляем сформированный ответ и удаляем обработанный сокет */
-					send((*it)->getSocket(), ((*it)->getResponseChars()).c_str(), (*it)->getResponseLen(), 0);
-					FD_CLR((*it)->getSocket(),&fd_write);
-					++done;
-					delete (*it);
-					*it = NULL;
+					status = send((*it)->getSocket(), ((*it)->getResponseChars()).c_str() + (*it)->getSendOffset(), 
+					(*it)->getResponseLen() - (*it)->getSendOffset(), 0);
+					if (status == -1)
+					{
+						std::cout << "send() failed." << std::endl;
+						for (std::list<Websocket *>::iterator it = sockets.begin(); it != sockets.end(); ++it)
+							delete (*it);
+						sockets.clear();
+						exit(-1);
+					}
+					else if (status != (int)((*it)->getResponseLen() - (*it)->getSendOffset()))
+					{
+						(*it)->setSendOffset(status);
+					}
+					else
+					{
+						FD_CLR((*it)->getSocket(),&fd_write);
+						++done;
+						delete (*it);
+						*it = NULL;
+					}
 				}
 			}
 		}

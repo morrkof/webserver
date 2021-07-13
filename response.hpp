@@ -16,6 +16,13 @@
 #include "AutoIndexPage.hpp"
 #include "config/ConfigurationServer.hpp"
 
+enum body_source {
+	FILENAME,
+	CGI,
+	AUTOINDEX,
+	CAT
+};
+
 class Response {
 private:
 	std::string							_response;
@@ -32,23 +39,10 @@ private:
 	std::string							_csRoot;
 	std::string							_csRoute;
 	location							_location;
+	std::string							_hostname;
 
 public:
-	Response(RequestParsing req, ConfigurationServer *server, char **env)
-	: _response("") ,_body(""), _errCodeStr("200 OK"), _errCode(200), _version(req.getVersion()), 
-	_contentType("text/html"), _responseLen(0), _parsedReq(req), _server(server), _env(env)
-	{ 
-		(void)_env;
-		_location = _server->getLocationVec()[0];
-		for (std::vector<location>::iterator it = _server->getLocationVec().begin(); it != _server->getLocationVec().end(); ++it)
-		{
-			if (_parsedReq.getLocation() == (*it).route)
-				_location = (*it);
-		}
-		chooseMethod(); 
-		generateContentType();
-	}
-
+	Response(RequestParsing req, ConfigurationServer *server, char **env);
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response() {}
@@ -68,9 +62,10 @@ public:
 	size_t			getResponseLen() const {return _responseLen;}
 
 // body and response
-	int				generateBody(const char* streamPath, int errCode);
+	int				generateBody(const char* streamPath);
 	int				methodGetFormBody();
 	std::string		generateResponse();
+	// std::string		constructResponse(body_source source, int code, std::string codeStr);
 
 // METHODS
 	void			methodGet();
