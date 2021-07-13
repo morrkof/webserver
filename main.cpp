@@ -173,8 +173,8 @@ int main(int argc, char **argv, char **env)
 					else
 					{
 						int len = 15;
-						char buf[len];
-						memset(buf, 0, len);
+						char buf[len+1];
+						memset(buf, 0, len+1);
 						status = recv((*it)->getSocket(), buf, len, 0);
 						if (status == -1)
 						{
@@ -189,7 +189,7 @@ int main(int argc, char **argv, char **env)
 							(*it)->setRecvBuf(buf);
 							(*it)->setRequest((*it)->getRecvBuf());
 							FD_CLR((*it)->getSocket(),&fd_read);
-							std::cout << (*it)->getRecvBuf() << std::endl; /* тут печать реквеста ДО парсинга */
+							// std::cout << (*it)->getRecvBuf() << std::endl; /* тут печать реквеста ДО парсинга */
 							// std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
 							// std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
 						}
