@@ -181,6 +181,7 @@ std::string	Response::CatGeneratePage(int code) {
 
 int		Response::methodGetFormBody() {
 	std::string		adr = _server->getReturnAddress().address;
+
 	_errCode = 200;
 	_errCodeStr = "200 Ok";
 	if (_server->getLocationVec()[0].autoindex) {
@@ -191,7 +192,7 @@ int		Response::methodGetFormBody() {
 	if (!adr.empty()) { // если строка заполнена
 		// if оканчивается на .php - CGI
 		if (adr.rfind(".") != std::string::npos) {
-			if (adr.substr(adr.rfind("."), std::string::npos) == ".php") {
+			if (adr.substr(adr.rfind("."), 4) == ".php") {
 				_body = cgi_process(_server->getLastLocation().fastcgi_pass, adr, "", _env);
 				_errCode = 200;
 				_errCodeStr = "200 OK";
