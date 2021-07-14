@@ -5,13 +5,13 @@
     <link href="styles/site.css" rel="stylesheet">
     <script src="scripts/jquery.js"></script>
     <script src="scripts/site.js"></script>
-    <title>Онлайн магазин</title>
+    <title>Онлайн магазин грибов</title>
 </head>
 <body>
 <header>
     <div id="headerInside">
         <div id="logo"></div>
-        <div id="companyName">Brand</div>
+        <div id="companyName">Troglodits</div>
         <div id="navWrap">
             <a href="/">
                 Главная
@@ -29,24 +29,24 @@
     $goods = [
         [
             'id' => 1,
-            'name' => 'Iphone',
-            'desc' => 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium',
-            'img' => '/images/goods/iphone.jpg',
-            'price' => '2000 $'
+            'name' => 'Мухомор',
+            'desc' => 'Мухомор - это не только ценный мех, но еще и 3 килограмма тяжелой, плохо перевариваемой пищи.',
+            'img' => '/images/goods/amanita.jpg',
+            'price' => '2000 💰'
         ],
         [
             'id' => 2,
-            'name' => 'HTC',
-            'desc' => 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium',
-            'img' => '/images/goods/htc.jpg',
-            'price' => '1200 $'
+            'name' => 'Светящаяся сыроежка',
+            'desc' => 'Светящаяся сыроежка - самое редкое грибное животное, оно обитает в тропиках и питается светящимися грибами.',
+            'img' => '/images/goods/russula.jpg',
+            'price' => '1200 💰'
         ],
         [
             'id' => 3,
-            'name' => 'Samsung',
-            'desc' => 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium',
-            'img' => '/images/goods/samsung.jpg',
-            'price' => '1400 $'
+            'name' => 'Лиловый копринус',
+            'desc' => 'Лиловый копринус - это очень вкусный гриб, он не ядовитый, но может испортить любой праздничный стол!',
+            'img' => '/images/goods/coprinus.png',
+            'price' => '1400 💰'
         ],
     ];
 
@@ -77,15 +77,15 @@
         <div id="contacts">
             <div class="contactWrap">
                 <img src="images/envelope.svg" class="contactIcon">
-                info@brandshop.ru
+                info@troglodits.ru
             </div>
             <div class="contactWrap">
                 <img src="images/phone-call.svg" class="contactIcon">
-                8 800 555 00 00
+                8 800 555 35 35
             </div>
             <div class="contactWrap">
                 <img src="images/placeholder.svg" class="contactIcon">
-                Москва, пр-т Ленина, д. 1 офис 304
+                Самая дальняя пещера
             </div>
         </div>
 
@@ -100,7 +100,7 @@
             <img class="socialItem" src="images/facebook-logo.svg">
         </div>
 
-        <div id="copyrights">&copy; Brand</div>
+        <div id="copyrights">&copy; Troglodits</div>
     </div>
 </footer>
 

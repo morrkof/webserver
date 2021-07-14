@@ -709,7 +709,7 @@ std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
         os << "]" << std::endl;
     }
     os << "root: [" << server.getRoot() << "]" << std::endl;
-    os << "ports: [";
+    os << "PORTS: [";
     std::vector<t_listen> listenVec = server.getListenVec();
     for (unsigned long i = 0; i < listenVec.size(); i++)
     {

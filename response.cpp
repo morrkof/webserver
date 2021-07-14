@@ -46,7 +46,6 @@ int			Response::generateBody(const char* streamPath) {
 	std::string		buf;
 	std::ifstream	ifs(streamPath);
 
-	// std::cout <<  "🐝" << streamPath << std::endl;
 	// + если нет прав на открытие файла - 403 error
 	if (ifs.is_open() == 0) 
 	{
@@ -61,44 +60,75 @@ int			Response::generateBody(const char* streamPath) {
 	return 0;
 }
 
-int		Response::methodGetFormBody() {
-	std::string		adr = _server->getReturnAddress().address;
+void		Response::methodGetFormBody() {
 	if (_server->getLocationVec()[0].autoindex) 
+	{
+		AutoIndexPage page(_server->getRoot() + _parsedReq.getLocation());
+		if (page.getIsDir())
+			_body = page.getPage();
+		else
 		{
-			AutoIndexPage page(_server->getRoot() + _parsedReq.getLocation());
-			if (page.getIsDir())
-				_body = page.getPage();
-			else
+			if (generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str()) == 1)
 			{
-				generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str());
+				_errCode = 404;
+				_errCodeStr = "404 Not Found";
+				_contentType = "text/html";
 			}
 		}
-	// else if (!adr.empty()) { 
-	// 	if (adr.rfind(".") != std::string::npos) {
-	// 		if (adr.substr(adr.rfind("."), 4) == ".php") {
-	// 			_body = cgi_process(_server->getLastLocation().fastcgi_pass, adr, "", _env);
-	// 			_errCode = 200;
-	// 			_errCodeStr = "200 OK";
-	// 	}}
-	// 	else { // if - папка
-	// 		_parsedReq.getMapHeaders().insert(_parsedReq.getMapHeaders().begin(), std::pair<std::string, std::string>("Location :", adr));
-	// 		_body = CatGeneratePage(_errCode);
-	// 		_errCode = 301;
-	// 		_errCodeStr = "301 Moved Permanently";
-	// 	}
-	// }
-	else if (_parsedReq.getLocation() == "/") {						// root + try_files в цикле
-		if (generateBody("sites/static/index.html") == 1)
-		return 1;
 	}
-	else {														// error 404
-		if (generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str()) == 1) {
-			_errCode = 404;
-			_errCodeStr = "404 Not Found";
-			return 1;
+	else if (_server->getReturnAddress().address.size())
+	{
+		_errCode = 301;
+		_errCodeStr = "301 Moved Permanently";
+		_contentType = "text/html";
+		_locationType = _server->getReturnAddress().address;
+	}
+
+	else
+	{
+		
+		if (_parsedReq.getLocation() == "/") 
+		{	
+			if (_server->getIndexVec()[0].find(".php") != std::string::npos)
+			{
+				_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + "/" + _server->getIndexVec()[0], "");
+			}
+			else if (generateBody((_server->getRoot() + "/" + _server->getIndexVec()[0]).c_str()) == 1)
+			{
+				_errCode = 404;
+				_errCodeStr = "404 Not Found";
+			}
 		}
+		else 
+		{
+			size_t i = _parsedReq.getLocation().find(".php?");
+			if (_parsedReq.getLocation().find(".php") != std::string::npos)
+			{
+				std::string params("");
+				if (i != std::string::npos)
+					params = _parsedReq.getLocation().substr(i+5, _parsedReq.getLocation().length()-i-5);
+				_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + "/" + _server->getIndexVec()[0], params);
+			}												
+			else if (generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str()) == 1) 
+			{
+				_errCode = 404;
+				_errCodeStr = "404 Not Found";
+			}
+		}
+			// добавить если файл содержит .php и аккуранто отдельть аргументы если они есть
+			// std::vector<std::string> trya = _location.try_files;
+			// for (std::vector<std::string>::iterator it = _location.try_files.begin(); it != _location.try_files.end(); ++it)
+			// {
+			// 	if (generateBody((_server->getRoot() + (*it)).c_str()) == 1)
+			// 	{
+			// 		_errCode = 404;
+			// 		_errCodeStr = "404 Not Found";
+			// 		_contentType = "text/html";
+			// 	}
+			// }
 	}
-	return 0; 
+			
+
 }
 
 void Response::methodGet() {
@@ -130,8 +160,7 @@ void Response::methodPost() {
 			{
 				if (_parsedReq.getMapHeaders()["Content-Type"] == "application/x-www-form-urlencoded")
 				{
-					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(),
-					_parsedReq.getBody(), _env);
+					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(), _parsedReq.getBody());
 					if (_body.size() == 0)
 					{
 						_errCode = 502;
@@ -188,18 +217,60 @@ void Response::methodDelete() {
 }
 
 std::string	Response::generateResponse() {
-//	example: "HTTP/1.1 200 Ok \n\n <Html> <Head> <title> Example </title>  </Head>  <Body> Hello </Body> </Html> "
-		_response.append(_version);		// HTTP/1.1
-		_response.append(" ");
-		_response.append(_errCodeStr);		// 200 ok
-		_response.append(" ");
-		_response.append("Content-Type: ");	// обязательное, без него пытается скачать
-		_response.append(_contentType);
-		_response.append("\n\n");		// один \n в конце предыдущего блока и ещё одна пустая строка чтоб отделить тело
-		if (_errCode != 200)
-			_body = CatGeneratePage(_errCode);
-		_response.append(_body);
-		_responseLen = _response.length();
+	if (_errCode != 200)
+		_body = CatGeneratePage(_errCode);
+
+	_response.append(_version);
+	_response.append(" ");
+	_response.append(_errCodeStr);
+	_response.append("\n");
+
+	_response.append("Server: ");
+	_response.append("Troglodits 4.2 Salty Salami");
+	_response.append("\n");
+
+	_response.append("Content-Type: ");	
+	_response.append(_contentType);
+	_response.append("\n");
+
+	_response.append("Content-Length: ");	
+	_response.append(static_cast< std::ostringstream & >((std::ostringstream() << std::dec << _body.length())).str());
+	_response.append("\n");
+
+	if (_errCode == 301)
+	{
+		_response.append("Location: ");
+		_response.append(_locationType);
+		_response.append("\n");
+	}
+
+	if (_errCode == 405)
+	{
+		std::string _allowMethodsServ;
+		std::set<std::string> tmp = _server->getMethods();
+		for (std::set<std::string>::iterator it = tmp.begin(); it != tmp.end(); ++it)
+		{
+			_allowMethodsServ += (*it);
+			_allowMethodsServ += " ";
+		}
+		_response.append("Public: ");
+		_response.append(_allowMethodsServ);
+		_response.append("\n");
+
+		std::string _allowMethods;
+		for (std::set<std::string>::iterator it = _location.methods.begin(); it != _location.methods.end(); ++it)
+		{
+			_allowMethods += (*it);
+			_allowMethods += " ";
+		}
+		_response.append("Allow: ");
+		_response.append(_allowMethods);
+		_response.append("\n");
+	}
+
+	_response.append("\n");
+	_response.append(_body);
+	_responseLen = _response.length();
 	return _response;
 }
 
@@ -222,16 +293,14 @@ std::string	Response::generateContentType() {
 	types[".mp3"] = "audio/mpeg";
 	types[".avi"] = "video/x-msvideo";
 	types[".otf"] =  "font/opentype";
-	if (extension.rfind(".") == std::string::npos) {
-		_contentType = "";
+	types[".svg"] =  "image/svg+xml";
+	if (extension.rfind(".") == std::string::npos)
 		return _contentType;
-	}
 	extension = extension.substr(extension.rfind("."), extension.npos);
 	for(std::map<std::string,std::string>::iterator it = types.begin(); it != types.end(); ++it) {
 		if (extension.compare(it->first) == 0)
 			_contentType = it->second;
 	}
-	// std::cout << "Content type: " << _contentType << std::endl;
 	return _contentType;
 }
 
@@ -254,22 +323,13 @@ std::string	Response::CatGeneratePage(int code) {
 **	path = "/usr/bin/php-cgi";
 **	filename = "/home/anastasia/Desktop/webserv/sites/dynamic/index.php";
 */
-std::string Response::cgi_process(std::string path, std::string filename, std::string params, char **env)
+std::string Response::cgi_process(std::string path, std::string filename, std::string params)
 {
 	std::string result;
 	pid_t pid;
 	int status;
-	char *args[4];
 	char buf[20000];
 	memset(buf, 0, 20000);
-	(void)params;
-	// TODO распиливать params по пробелам, убрать захардкоженное
-	args[0] = new char[std::string("php-cgi").size()];
-	args[0] = (char *)"php-cgi";
-	args[1] = (char *)filename.c_str();
-	args[2] = (char *)"page=shop";
-	args[3] = NULL;
-
 	int piped[2];
 	pipe(piped);
 
@@ -285,8 +345,7 @@ std::string Response::cgi_process(std::string path, std::string filename, std::s
 		dup2(piped[1], 1);
 		close (piped[0]);
 		close (piped[1]);
-		execve(path.c_str(), args, env);
-		// execl(path.c_str(), filename.c_str(), params.c_str(), (char *)NULL); // попробовать этот вариант без env
+		execl(path.c_str(), path.c_str(), "-q", filename.c_str(), params.c_str(), (char *)NULL); // попробовать этот вариант без env
 	}
 	else
 	{

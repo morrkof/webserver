@@ -31,6 +31,7 @@ private:
 	int									_errCode;
 	std::string							_version;
 	std::string							_contentType;
+	std::string							_locationType;
 	size_t								_responseLen;
 	RequestParsing						_parsedReq;
 	ConfigurationServer					*_server;
@@ -50,7 +51,7 @@ public:
 
 // choose method
 	void			chooseMethod();
-	std::string		cgi_process(std::string path, std::string filename, std::string params, char **env);
+	std::string		cgi_process(std::string path, std::string filename, std::string params);
 
 // generate variables
 	std::string		CatGeneratePage(int code);
@@ -63,10 +64,9 @@ public:
 
 // body and response
 	int				generateBody(const char* streamPath);
-	int				methodGetFormBody();
+	void			methodGetFormBody();
 	std::string		generateResponse();
-	// std::string		constructResponse(body_source source, int code, std::string codeStr);
-
+	
 // METHODS
 	void			methodGet();
 	void			methodPost();

@@ -21,33 +21,29 @@ ConfigurationFile*	getConfig(std::string	fileName)
 {
 	ConfigurationFile	*configParser = new ConfigurationFile();
 
-	std::cout << "Start parse config" << std::endl;
 	configParser->parseFile(fileName);
-	std::cout << "Finish parse config" << std::endl;
 	std::vector<ConfigurationServer> *servers = configParser->getServers();
+	std::cout << "____________________________________________________________" << std::endl;
 	std::cout << "Got servers: " << servers->size() << std::endl;
 	for (unsigned long i = 0; i < servers->size(); i++)
 	{
 		std::cout << servers->at(i);
-		std::cout << "--------------------------------------" << std::endl;
+		std::cout << "____________________________________________________________" << std::endl;
 	}
 
 	return configParser;
 }
 
-/* создаём слушающие сокеты в этой функции */
 int	socket_init(int port)
 {
 	int listen_socket;
 	int on = 1;
 
-	/* открываем сокет и присваиваем его в listen_socket */
 	if (!(listen_socket = socket(PF_INET, SOCK_STREAM, 0)))
 	{
 		std::cout << "socket() failed\n";
 		exit(-1);
 	}
-	/* делаем наш сокет реюзабельным, для повторного использования без кулдауна */
 	int rc = setsockopt(listen_socket, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
 	{
@@ -55,9 +51,7 @@ int	socket_init(int port)
 		close(listen_socket);
 		exit(-1);
 	}
-	/* делаем наш сокет неблокирующим, чтоб процесс не вис тут, если клиент не отвечает */
 	fcntl(listen_socket, F_SETFL, O_NONBLOCK);
-	/* подготавливаем стандартную структуру с настройками порта и привязываем сокет к порту */
 	struct sockaddr_in addr;
 	addr.sin_family = PF_INET;
 	addr.sin_port = htons(port);
@@ -68,7 +62,6 @@ int	socket_init(int port)
 		close(listen_socket);
 		exit(-1);
 	}
-	/* выставляем наш сокет в слушающий режим, он готов принимать соединения */
 	if (listen(listen_socket, 128) == -1)
 	{
 		std::cout << "listen() failed\n";
@@ -83,9 +76,8 @@ int main(int argc, char **argv, char **env)
 	int status;
 	ConfigurationFile *config;
 
-	/* Пошел сюда конфиг */
 	if (argc == 1)
-		config = getConfig("basic_static.conf");
+		config = getConfig("basic_dynamic.conf");
 	else
 	{
 		std::string filename(argv[1]);
@@ -108,10 +100,8 @@ int main(int argc, char **argv, char **env)
 		}
 	}
 	
-	
 	std::cout << "🦄 Waiting for connect\n";
 
-	/* переменные для селекта */
 	fd_set fd_read, fd_write;
 	int ready_events;
 	while (1)
@@ -120,7 +110,6 @@ int main(int argc, char **argv, char **env)
 		sockets.remove(NULL);
 		FD_ZERO(&fd_read);
 		FD_ZERO(&fd_write);
-		/* проходим по всем сокетам и добавляем их в наборы для ловли событий */
 		for (std::list<Websocket *>::iterator it = sockets.begin(); it != sockets.end(); ++it)
 		{
 			if ((*it)->getType() == WRITE)
@@ -128,11 +117,9 @@ int main(int argc, char **argv, char **env)
 			else
 				FD_SET((*it)->getSocket(), &fd_read);
 		}
-		/* сортируем, так как селект принимает максимальный + 1 */
 		sockets.sort(compare_ws);
 		/* непосредственно, селект. возвращает количество готовых событий */
 		ready_events = select((*(sockets.rbegin()))->getSocket() + 1, &fd_read, &fd_write, NULL, NULL);
-		/* если вернул < 0 = ошибка, всё зачищаем и закрываем и выходим */
 		if (ready_events < 0)
 		{
 			std::cout << "select() failed." << std::endl;
@@ -141,13 +128,11 @@ int main(int argc, char **argv, char **env)
 			sockets.clear();
 			exit(-1);
 		}
-		/* вернул 0 - таймаут, запустить по второму кругу */
 		else if (ready_events == 0)
 		{
 			std::cout << "select() timeout\n";
 			continue;
 		}
-		/* вернул > 0 = идём смотреть, что за события нам поймались */
 		else
 		{
 			/* заводим счётчик отработанных событий и перебираем все наши сокеты */
@@ -172,7 +157,7 @@ int main(int argc, char **argv, char **env)
 					/* если это сокет данных, то читаем запрос и формируем ответ, внутри класса пометка READ превратится во WRITE */
 					else
 					{
-						int len = 15;
+						int len = 512;
 						char buf[len+1];
 						memset(buf, 0, len+1);
 						status = recv((*it)->getSocket(), buf, len, 0);
