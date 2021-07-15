@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bbelen <bbelen@student.21-school.ru>       +#+  +:+       +#+        */
+/*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:02:10 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/10 12:50:33 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/15 08:11:19 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,20 +28,23 @@
  * 
  * Соответственно, класс ConfigurationServer состоит из:
  * 
- * 		std::vector<t_listen>               listenVec; - для списка портов
- *      std::string                         root; - корневой каталог
- *      std::vector<std::string>            serverNameVec; - список имен серверов (может быть несколько)
- *      std::vector<location>               locationVec; - список рутов (маршрутов)
- *      std::set<std::string>               methods; - методы
- *      std::vector<std::string>            indexVec; - возможные стартовые страницы
- *      returnAddress                       returnAddr; - в случае перенаправления
- * 		std::set<std::string>       		methods;
+ * 		std::string                 route;
+ * 		std::string                 root;
+ *    	bool                        autoindex;
+ *   	std::vector<std::string>    try_files;
+ *   	bool                        finished;
+ *   	int                         errorCode;
+ *   	std::string                 fastcgi_include;
+ *   	std::string                 fastcgi_pass;
+ *   	std::set<std::string>       methods;
+ *   	int                         client_body_size;
  * 
  * Структура t_listen:
  * 
  * 		typedef struct  s_listen
  * 		{
- * 		   int         port;
+ * 			std::string         host;
+ * 		    int         port;
  * 		}       t_listen; (там могут понадобиться доп поля, так что структура)
  * 
  * Структура location:

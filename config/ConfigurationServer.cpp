@@ -14,22 +14,12 @@
 
 ConfigurationServer::ConfigurationServer()
 {
-    //this->serverNameVec = NULL;
-    // this->root = "";
-    // this->indexVec = NULL;
+    
 }
 
 ConfigurationServer::~ConfigurationServer()
 {
-    // std::cout << "----deleting a server----" << std::endl;
-    // this->serverNameVec->clear();
-    // this->indexVec->clear();
-	// delete this->serverNameVec;
-	// delete this->indexVec;
-	// for (unsigned long i = 0; i < this->locationVec.size(); i++)
-	// {
-	// 	delete locationVec[i].try_files;
-	// }
+    
 }
 
 ConfigurationServer::ConfigurationServer(const ConfigurationServer &config)
@@ -63,11 +53,6 @@ void    ConfigurationServer::setRoot(std::string root)
 
 void    ConfigurationServer::addServerName(std::string serverName)
 {
-    // if (this->serverNameVec. == NULL)
-    // {
-    //     this->serverNameVec = new std::vector<std::string>(1, serverName);
-    //     return;
-    // }
     this->serverNameVec.push_back(serverName);
 }
 
@@ -94,13 +79,6 @@ void    ConfigurationServer::addReturnAddress(returnAddress returnAddr)
 
 void    ConfigurationServer::addIndex(std::string index)
 {
-    //     if (this->indexVec == NULL)
-    // {
-    //     //std::cout << "No indeces before" << std::endl;
-    //     this->indexVec = new std::vector<std::string>(1, index);
-    //     //std::cout << *(this->indexVec->begin()) << std::endl;
-    //     return;
-    // }
     this->indexVec.push_back(index);
 }
 
@@ -179,7 +157,6 @@ void    ConfigurationServer::parseListen(std::vector<std::string> &line)
         currentListen.port = possiblePort;
     }
     this->addListen(currentListen);
-    //std::cout << "---------Success listen: " << currentListen.port << std::endl;
 }
 
 void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
@@ -208,7 +185,6 @@ void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
             }
         }
         this->addServerName(line[i]);
-        //std::cout << "---------Success server_name: " << this->serverNameVec[i - 1] << std::endl;
     }
         
 }
@@ -229,7 +205,6 @@ void    ConfigurationServer::parseRoot(std::vector<std::string> &line)
         throw ConfigurationServer::ServerParserException();
         exit(SYNTAX_ERROR);
     }
-    //std::cout << "---------Success root: " << this->root << std::endl;
 }
 
 void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
@@ -270,8 +245,6 @@ void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
         newLocation->route = std::string(line[1]);
         newLocation->autoindex = false;
         newLocation->client_body_size = -1;
-        // newLocation->try_files = NULL;
-        // newLocation->try_files = new std::vector<std::string>();
         if (line[2] != "{")
         {
             throw ConfigurationServer::ServerParserException();
@@ -284,7 +257,6 @@ void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
         newLocation->finished = false;
         this->addLocation(*newLocation); 
         delete newLocation;
-        // std::cout << "location added: " << this->getLocationVec().size() << std::endl;
     }
     else
     {
@@ -312,62 +284,6 @@ bool    ConfigurationServer::findFileInDirectory(location &lastLocation, std::st
         it++;
     }
     return false;
-}
-
-void    ConfigurationServer::fillTryFilesByAuto()
-{
-    // location &lastLocation = this->getLastLocation();
-    // if (lastLocation.try_files.size() == 0)
-    // {
-    //     throw ConfigurationServer::ServerNotEnoughParansException();
-    //     exit (FILE_ERROR);
-    // }
-    // DIR *dir;
-    // dirent *ent;
-    // std::string dirPath = "./sites";
-    // if (this->root != "")
-    //     dirPath = dirPath + this->root;
-    // else
-    // {
-    //     throw ConfigurationServer::ServerNotEnoughParansException();
-    //     exit(FILE_ERROR);
-    // }
-
-    // if (lastLocation.route != "")
-    //     dirPath = dirPath + lastLocation.route;
-    // else
-    // {
-    //     throw ConfigurationServer::ServerNotEnoughParansException();
-    //     exit (FILE_ERROR);
-    // }
-
-    // std::vector<std::string> *new_try_files = new std::vector<std::string>();
-
-    // std::cout << "dir is " << dirPath << std::endl << "Files: " << std::endl;
-    // if ((dir = opendir(dirPath.c_str())) != NULL)
-    // {
-    //     /* print all the files and directories within directory */
-    //     std::cout << "Dir opened" << std::endl;
-    //     while ((ent = readdir (dir)) != NULL)
-    //     {
-    //         std::cout << ent->d_name << " " << (int)ent->d_type << " | ";
-    //         if ((int)ent->d_type == 8 && (findFileInDirectory(lastLocation, ent->d_name)))
-    //         {
-    //             new_try_files->push_back(dirPath + ent->d_name);
-    //             std::cout << "Found " << dirPath << ent->d_name << std::endl;
-    //             break;
-    //         }
-    //     }
-    //     delete lastLocation.try_files;
-    //     lastLocation.try_files = new_try_files;
-    //     std::cout << std::endl;
-    //     closedir (dir);
-    // }
-    // else
-    // {
-    //     /* could not open directory */
-    //     std::cout << "no dir found" << std::endl;
-    // }
 }
 
 void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
@@ -619,7 +535,6 @@ void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
         throw ConfigurationServer::ServerParserException();
         exit(SYNTAX_ERROR);
     }
-    std::cout << "---------Success return: " << this->returnAddr.errorCode << std::endl;
 }
 
 void    ConfigurationServer::parseMethods(std::vector<std::string> &line)
