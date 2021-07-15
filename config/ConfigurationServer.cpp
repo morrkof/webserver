@@ -14,12 +14,12 @@
 
 ConfigurationServer::ConfigurationServer()
 {
-    
+    this->config = NULL;
 }
 
 ConfigurationServer::~ConfigurationServer()
 {
-    
+    this->config = NULL;
 }
 
 ConfigurationServer::ConfigurationServer(const ConfigurationServer &config)
@@ -82,6 +82,10 @@ void    ConfigurationServer::addIndex(std::string index)
     this->indexVec.push_back(index);
 }
 
+void    ConfigurationServer::setConfig(ConfigurationFile *config)
+{
+    this->config = config;
+}
 
 std::vector<t_listen>      ConfigurationServer::getListenVec()
 {
@@ -120,6 +124,12 @@ returnAddress            ConfigurationServer::getReturnAddress()
 
 void    ConfigurationServer::parseListen(std::vector<std::string> &line)
 {
+    if (line[line.size() - 1] != ";" && *(line[line.size() - 1].end() - 1) != ';')
+    {
+        throw ConfigurationServer::ServerParserException();
+        exit(SYNTAX_ERROR);
+    }
+
     t_listen  currentListen;
     currentListen.host = "";
 
@@ -186,12 +196,11 @@ void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
         }
         this->addServerName(line[i]);
     }
-        
 }
 
 void    ConfigurationServer::parseRoot(std::vector<std::string> &line)
 {
-    if (line.size() == 2)
+    if (line.size() == 2 && *(line[1].end() - 1) == ';')
     {
         line[1].assign(line[1].begin(), line[1].end() - 1);
         this->setRoot(line[1]);
@@ -291,11 +300,11 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
     location &lastLocation = this->getLastLocation();
     if (line[0] == "autoindex")
     {
-        if ((line[1] == "on" && line[2] == ";") || (line[1] == "on;"))
+        if ((line[1] == "on" && line.size() >= 3 && line[2] == ";") || (line[1] == "on;"))
         {
             lastLocation.autoindex = true;
         }
-        else if (line[1] == "off" && line[2] == ";")
+        else if (line[1] == "off" && line.size() >= 3 && line[2] == ";")
             lastLocation.autoindex = false;
         else if (line[1] == "off;")
             lastLocation.autoindex = false;

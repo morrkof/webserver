@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/15 08:14:52 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/15 08:56:00 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ ConfigurationFile &ConfigurationFile::operator=(const ConfigurationFile &file)
 
 void    ConfigurationFile::addServer(ConfigurationServer *server)
 {
+    server->setConfig(this);
     if (this->serverVec == NULL)
     {
         this->serverVec = new std::vector<ConfigurationServer>(1, *server);

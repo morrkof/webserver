@@ -40,6 +40,7 @@ struct returnAddress
     std::string address;
 };
 
+class ConfigurationFile;
 
 class ConfigurationServer
 {
@@ -52,6 +53,7 @@ class ConfigurationServer
         std::vector<std::string>            indexVec;
         bool                                autoIndex;
         returnAddress                       returnAddr;
+        ConfigurationFile                   *config;
     
     public:
         ConfigurationServer();
@@ -68,6 +70,7 @@ class ConfigurationServer
         void    setAutoIndex(bool autoIndex);
         void    addReturnAddress(returnAddress returnAddr);
         void    addIndex(std::string index);
+        void    setConfig(ConfigurationFile *config);
 
         std::vector<t_listen>         getListenVec();
         std::vector<std::string>    &getServerNameVec();
