@@ -66,6 +66,7 @@ public:
 	int				generateBody(const char* streamPath);
 	void			methodGetFormBody();
 	std::string		generateResponse();
+	location  generateLocation();
 	
 // METHODS
 	void			methodGet();

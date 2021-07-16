@@ -13,7 +13,7 @@ size_t Websocket::getResponseLen() { return _response.getResponseLen(); }
 int Websocket::getSendOffset() { return _send_offset; }
 std::string Websocket::getRecvBuf() { return _recv_buf; }
 void Websocket::setSendOffset(int bytes) { _send_offset += bytes; }
-void Websocket::setRecvBuf(std::string buf) { _recv_buf += buf; }
+void Websocket::setRecvBuf(std::vector<char> buf, size_t size) { _recv_buf.append(buf.begin(),buf.begin() + size); }
 
 void Websocket::setType(socket_type type) { _type = type; }
 void Websocket::setRequest(std::string buf) 

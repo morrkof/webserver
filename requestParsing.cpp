@@ -100,7 +100,7 @@ int		RequestParsing::chooseBody() {
 		// std::cout << "The body is not found" << std::endl;
 		return 0;
 	}
-	_dataNext = _dataNext.substr(_posNext + 1, std::string::npos);
+	_dataNext = _dataNext.substr(_posNext, std::string::npos);
 	size_t		doubleNewline = _dataNext.find("\r\n\r\n");
 	_dataNext = _dataNext.substr(0, doubleNewline); // _dataNext now equals content
 	_body = _dataNext;

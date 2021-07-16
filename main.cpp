@@ -157,10 +157,11 @@ int main(int argc, char **argv, char **env)
 					/* если это сокет данных, то читаем запрос и формируем ответ, внутри класса пометка READ превратится во WRITE */
 					else
 					{
-						int len = 512;
-						char buf[len+1];
-						memset(buf, 0, len+1);
-						status = recv((*it)->getSocket(), buf, len, 0);
+						const size_t len = 1024;
+						// unsigned char buf[len+1];
+						std::vector<char> buf(len);
+						// memset(buf, 0, len+1);
+						status = recv((*it)->getSocket(), &buf[0], len, 0);
 						if (status == -1)
 						{
 							std::cout << "recieve() failed." << std::endl;
@@ -169,17 +170,17 @@ int main(int argc, char **argv, char **env)
 							sockets.clear(); 
 							exit(-1);
 						}
-						else if (status < len)
+						else if (status < (int)len)
 						{
-							(*it)->setRecvBuf(buf);
+							(*it)->setRecvBuf(buf,status);
 							(*it)->setRequest((*it)->getRecvBuf());
 							FD_CLR((*it)->getSocket(),&fd_read);
-							// std::cout << (*it)->getRecvBuf() << std::endl; /* тут печать реквеста ДО парсинга */
+							std::cout << (*it)->getRecvBuf() << std::endl; /* тут печать реквеста ДО парсинга */
 							// std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
 							// std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
 						}
 						else
-							(*it)->setRecvBuf(buf);
+							(*it)->setRecvBuf(buf,status);
 					}
 					++done;
 				}

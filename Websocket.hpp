@@ -39,7 +39,7 @@ public:
 	int getSendOffset();
 	std::string getRecvBuf();
 	void setSendOffset(int bytes);
-	void setRecvBuf(std::string buf);
+	void setRecvBuf(std::vector<char> buf, size_t size);
 
 	void setType(socket_type type);
 	void setRequest(std::string buf);

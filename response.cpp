@@ -5,7 +5,10 @@ Response::Response(RequestParsing req, ConfigurationServer *server, char **env)
 	_contentType("text/html"), _responseLen(0), _parsedReq(req), _server(server), _env(env)
 	{
 		bool is_server = false;
-		_location = _server->getLocationVec()[0];
+		if (_server->getLocationVec().size())
+			_location = _server->getLocationVec()[0];
+		else
+			_location = generateLocation();
 		for (std::vector<location>::iterator it = _server->getLocationVec().begin(); it != _server->getLocationVec().end(); ++it)
 		{
 			if (_parsedReq.getLocation() == (*it).route)
@@ -27,6 +30,15 @@ Response::Response(RequestParsing req, ConfigurationServer *server, char **env)
 			generateResponse();
 		}
 	}
+
+ location  Response::generateLocation()
+ {
+	 location tmp;
+	 tmp.client_body_size = -1;
+	 tmp.fastcgi_pass = "";
+	 tmp.methods = _server->getMethods();
+	 return tmp;
+ }
 
 void Response::chooseMethod() {
 	generateContentType();
@@ -61,7 +73,7 @@ int			Response::generateBody(const char* streamPath) {
 }
 
 void		Response::methodGetFormBody() {
-	if (_server->getLocationVec()[0].autoindex) 
+	if (_server->getLocationVec().size() && _server->getLocationVec()[0].autoindex) 
 	{
 		AutoIndexPage page(_server->getRoot() + _parsedReq.getLocation());
 		if (page.getIsDir())
@@ -85,13 +97,18 @@ void		Response::methodGetFormBody() {
 	}
 
 	else
-	{
-		
+	{	
 		if (_parsedReq.getLocation() == "/") 
 		{	
 			if (_server->getIndexVec()[0].find(".php") != std::string::npos)
 			{
-				_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + "/" + _server->getIndexVec()[0], "");
+				if (!_location.fastcgi_pass.size())
+				{
+					_errCode = 502;
+					_errCodeStr = "502 Bad Gateway";
+				}
+				else
+					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + "/" + _server->getIndexVec()[0], "");
 			}
 			else if (generateBody((_server->getRoot() + "/" + _server->getIndexVec()[0]).c_str()) == 1)
 			{
@@ -104,10 +121,18 @@ void		Response::methodGetFormBody() {
 			size_t i = _parsedReq.getLocation().find(".php?");
 			if (_parsedReq.getLocation().find(".php") != std::string::npos)
 			{
-				std::string params("");
-				if (i != std::string::npos)
-					params = _parsedReq.getLocation().substr(i+5, _parsedReq.getLocation().length()-i-5);
-				_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + "/" + _server->getIndexVec()[0], params);
+				if (!_location.fastcgi_pass.size())
+				{
+					_errCode = 502;
+					_errCodeStr = "502 Bad Gateway";
+				}
+				else
+				{
+					std::string params("");
+					if (i != std::string::npos)
+						params = _parsedReq.getLocation().substr(i+5, _parsedReq.getLocation().length()-i-5);
+					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + "/" + _server->getIndexVec()[0], params);
+				}
 			}												
 			else if (generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str()) == 1) 
 			{
@@ -115,20 +140,7 @@ void		Response::methodGetFormBody() {
 				_errCodeStr = "404 Not Found";
 			}
 		}
-			// добавить если файл содержит .php и аккуранто отдельть аргументы если они есть
-			// std::vector<std::string> trya = _location.try_files;
-			// for (std::vector<std::string>::iterator it = _location.try_files.begin(); it != _location.try_files.end(); ++it)
-			// {
-			// 	if (generateBody((_server->getRoot() + (*it)).c_str()) == 1)
-			// 	{
-			// 		_errCode = 404;
-			// 		_errCodeStr = "404 Not Found";
-			// 		_contentType = "text/html";
-			// 	}
-			// }
 	}
-			
-
 }
 
 void Response::methodGet() {
@@ -160,16 +172,24 @@ void Response::methodPost() {
 			{
 				if (_parsedReq.getMapHeaders()["Content-Type"] == "application/x-www-form-urlencoded")
 				{
-					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(), _parsedReq.getBody());
-					if (_body.size() == 0)
+					if (!_location.fastcgi_pass.size())
 					{
 						_errCode = 502;
 						_errCodeStr = "502 Bad Gateway";
 					}
+					else
+					{
+						_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(), _parsedReq.getBody());
+						if (_body.size() == 0)
+						{
+							_errCode = 502;
+							_errCodeStr = "502 Bad Gateway";
+						}
+					}
 				}
 				else
 				{
-					std::ofstream ofs((_server->getRoot() + _parsedReq.getLocation()).c_str());
+					std::ofstream ofs((_server->getRoot() + _parsedReq.getLocation()).c_str(), std::ios::binary);
 					if (!ofs)
 					{
 						_errCode = 500;
