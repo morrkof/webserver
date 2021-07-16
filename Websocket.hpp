@@ -22,10 +22,9 @@ private:
 	Response _response;
 	ConfigurationServer	*_server;
 	std::string _recv_buf;
-	char **_env;
 
 public:
-	Websocket(int socket, socket_type type, ConfigurationServer *server, char **env);
+	Websocket(int socket, socket_type type, ConfigurationServer *server);
 	~Websocket();
 	Websocket();
 
