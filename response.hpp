@@ -16,13 +16,6 @@
 #include "AutoIndexPage.hpp"
 #include "config/ConfigurationServer.hpp"
 
-enum body_source {
-	FILENAME,
-	CGI,
-	AUTOINDEX,
-	CAT
-};
-
 class Response {
 private:
 	std::string							_response;
