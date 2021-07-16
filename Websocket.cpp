@@ -1,7 +1,7 @@
 #include "Websocket.hpp"
 
-Websocket::Websocket(int socket, socket_type type, ConfigurationServer *server, char **env)
-: _socket(socket), _send_offset(0), _type(type), _server(server), _recv_buf(""), _env(env) {}
+Websocket::Websocket(int socket, socket_type type, ConfigurationServer *server)
+: _socket(socket), _send_offset(0), _type(type), _server(server), _recv_buf("") {}
 Websocket::~Websocket() { close(_socket);}
 
 int Websocket::getSocket(void) const { return _socket; }
@@ -20,7 +20,7 @@ void Websocket::setRequest(std::string buf)
 {
 	_type = WRITE; 
 	_request = RequestParsing(buf);
-	_response = Response(_request, _server, _env);
+	_response = Response(_request, _server);
 }
 
 bool compare_ws(Websocket *lhs, Websocket *rhs)

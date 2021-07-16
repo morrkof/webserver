@@ -1,8 +1,12 @@
 #include "response.hpp"
 
-Response::Response(RequestParsing req, ConfigurationServer *server, char **env)
-	: _response("") ,_body(""), _errCodeStr("200 OK"), _errCode(200), _version(req.getVersion()), 
-	_contentType("text/html"), _responseLen(0), _parsedReq(req), _server(server), _env(env)
+Response::Response(RequestParsing req, ConfigurationServer *server)
+: _response("") ,_body(""), _errCodeStr("200 OK"), _errCode(200), _version(req.getVersion()), 
+_contentType("text/html"), _responseLen(0), _parsedReq(req), _server(server)
+{
+	bool is_server = false;
+	_location = _server->getLocationVec()[0];
+	for (std::vector<location>::iterator it = _server->getLocationVec().begin(); it != _server->getLocationVec().end(); ++it)
 	{
 		bool is_server = false;
 		if (_server->getLocationVec().size())
@@ -30,6 +34,8 @@ Response::Response(RequestParsing req, ConfigurationServer *server, char **env)
 			generateResponse();
 		}
 	}
+}
+
 
  location  Response::generateLocation()
  {
@@ -54,20 +60,20 @@ void Response::chooseMethod() {
 	}
 }
 
-int			Response::generateBody(const char* streamPath) {
+
+int Response::generateBody(const char* streamPath) 
+{
 	std::string		buf;
 	std::ifstream	ifs(streamPath);
 
-	// + если нет прав на открытие файла - 403 error
 	if (ifs.is_open() == 0) 
-	{
 		return 1;
+	while (!ifs.eof()) 
+	{
+		std::getline(ifs, buf);
+		_body.append(buf);
+		_body.append("\n");
 	}
-		while (!ifs.eof()) {
-			std::getline(ifs, buf);
-			_body.append(buf);
-			_body.append("\n");
-		}
 	ifs.close();
 	return 0;
 }
@@ -95,7 +101,6 @@ void		Response::methodGetFormBody() {
 		_contentType = "text/html";
 		_locationType = _server->getReturnAddress().address;
 	}
-
 	else
 	{	
 		if (_parsedReq.getLocation() == "/") 
@@ -143,7 +148,9 @@ void		Response::methodGetFormBody() {
 	}
 }
 
-void Response::methodGet() {
+
+void Response::methodGet() 
+{
 	if (_server->getMethods().count("GET"))
 		methodGetFormBody();
 	else {
@@ -154,7 +161,9 @@ void Response::methodGet() {
 	generateResponse();
 }
 
-void Response::methodPost() {
+
+void Response::methodPost() 
+{
 	if (_server->getMethods().count("POST"))
 	{
 		_contentType = "text/html";
@@ -214,7 +223,9 @@ void Response::methodPost() {
 	generateResponse();
 }
 
-void Response::methodDelete() {
+
+void Response::methodDelete() 
+{
 	if (_server->getMethods().count("DELETE"))
 	{
 		_csRoot = _server->getRoot();
@@ -236,7 +247,9 @@ void Response::methodDelete() {
 	generateResponse();
 }
 
-std::string	Response::generateResponse() {
+
+std::string	Response::generateResponse() 
+{
 	if (_errCode != 200)
 		_body = CatGeneratePage(_errCode);
 
@@ -294,7 +307,9 @@ std::string	Response::generateResponse() {
 	return _response;
 }
 
-std::string	Response::generateContentType() {
+
+std::string	Response::generateContentType()
+{
 	std::string	extension(_parsedReq.getLocation());
 	std::map<std::string, std::string>	types;
 	types[".txt"] = "text/plain";
@@ -325,8 +340,8 @@ std::string	Response::generateContentType() {
 }
 
 
-
-std::string	Response::CatGeneratePage(int code) {
+std::string	Response::CatGeneratePage(int code) 
+{
 	std::string result;
 	result.append("<html>");
 	result.append("<body style=\"background-color:#000000\">");
@@ -338,11 +353,6 @@ std::string	Response::CatGeneratePage(int code) {
 }
 
 
-/*
-**	params = "a=b";
-**	path = "/usr/bin/php-cgi";
-**	filename = "/home/anastasia/Desktop/webserv/sites/dynamic/index.php";
-*/
 std::string Response::cgi_process(std::string path, std::string filename, std::string params)
 {
 	std::string result;
@@ -356,16 +366,17 @@ std::string Response::cgi_process(std::string path, std::string filename, std::s
 	pid = fork();
 
 	if (pid < 0)
-	{
 		std::cout << "fork() failed\n";
-		exit(-1);
-	}
 	else if (pid == 0)
 	{
+		int error = dup(2);
+		(void)error;
+		close (2);
 		dup2(piped[1], 1);
 		close (piped[0]);
 		close (piped[1]);
-		execl(path.c_str(), path.c_str(), "-q", filename.c_str(), params.c_str(), (char *)NULL); // попробовать этот вариант без env
+		execl(path.c_str(), path.c_str(), "-q", filename.c_str(), params.c_str(), (char *)NULL);
+		exit (1);
 	}
 	else
 	{
@@ -374,11 +385,12 @@ std::string Response::cgi_process(std::string path, std::string filename, std::s
 		read(piped[0], buf, 20000);
 	}
 	result = buf;
-
 	return result;
 }
 
-Response	&Response::operator=(Response const &equal_op) {
+
+Response	&Response::operator=(Response const &equal_op) 
+{
 	if (this != &equal_op) {
 		this->_response = equal_op._response;
 		this->_body = equal_op._body;
@@ -389,7 +401,6 @@ Response	&Response::operator=(Response const &equal_op) {
 		this->_responseLen = equal_op._responseLen;
 		this->_parsedReq = equal_op._parsedReq;
 		this->_server = equal_op._server;
-		this->_env = equal_op._env;
 		this->_csMethod = equal_op._csMethod;
 		this->_csRoot = equal_op._csRoot;
 		this->_csRoute = equal_op._csRoute;
@@ -397,7 +408,9 @@ Response	&Response::operator=(Response const &equal_op) {
 	return (*this);
 }
 
-std::ostream&	operator<<(std::ostream	&out, Response &x) {
+
+std::ostream&	operator<<(std::ostream	&out, Response &x) 
+{
 	out << std::endl << "🌠 START:: show response 🌠" << std::endl;
 	out << x.getResponse() << std::endl;
 	out << "🌠 END:: show response 🌠" << std::endl << std::endl;

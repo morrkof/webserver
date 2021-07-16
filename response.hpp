@@ -16,13 +16,6 @@
 #include "AutoIndexPage.hpp"
 #include "config/ConfigurationServer.hpp"
 
-enum body_source {
-	FILENAME,
-	CGI,
-	AUTOINDEX,
-	CAT
-};
-
 class Response {
 private:
 	std::string							_response;
@@ -35,7 +28,6 @@ private:
 	size_t								_responseLen;
 	RequestParsing						_parsedReq;
 	ConfigurationServer					*_server;
-	char 								**_env;
 	std::string							_csMethod;
 	std::string							_csRoot;
 	std::string							_csRoute;
@@ -43,7 +35,7 @@ private:
 	std::string							_hostname;
 
 public:
-	Response(RequestParsing req, ConfigurationServer *server, char **env);
+	Response(RequestParsing req, ConfigurationServer *server);
 	Response(Response const &copy): _parsedReq(copy._parsedReq) {*this = copy; return;};
 	~Response() {};
 	Response() {}

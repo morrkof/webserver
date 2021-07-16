@@ -71,7 +71,7 @@ int	socket_init(int port)
 	return listen_socket;
 }
 
-int main(int argc, char **argv, char **env)
+int main(int argc, char **argv)
 {
 	int status;
 	ConfigurationFile *config;
@@ -95,7 +95,7 @@ int main(int argc, char **argv, char **env)
 		std::vector<t_listen> ports = temp->getListenVec();
 		for (std::vector<t_listen>::iterator it2 = ports.begin(); it2 != ports.end(); it2++)
 		{
-			s = new Websocket(socket_init((*it2).port), LISTEN, temp, env);
+			s = new Websocket(socket_init((*it2).port), LISTEN, temp);
 			sockets.push_back(s);
 		}
 	}
@@ -150,7 +150,7 @@ int main(int argc, char **argv, char **env)
 						unsigned int address_size = sizeof(client_addr);
 						int conn = accept((*it)->getSocket(), (sockaddr *) &client_addr, &address_size);
 						fcntl(conn, F_SETFL, O_NONBLOCK);
-						Websocket *s = new Websocket(conn, READ, (*it)->getServer(), env);
+						Websocket *s = new Websocket(conn, READ, (*it)->getServer());
 						sockets.push_back(s);
 						FD_CLR((*it)->getSocket(),&fd_read);
 					}
