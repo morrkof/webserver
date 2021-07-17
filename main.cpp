@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 	ConfigurationFile *config;
 
 	if (argc == 1)
-		config = getConfig("basic_dynamic.conf");
+		config = getConfig("basic_static.conf");
 	else
 	{
 		std::string filename(argv[1]);
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 							FD_CLR((*it)->getSocket(),&fd_read);
 							std::cout << (*it)->getRecvBuf() << std::endl; /* тут печать реквеста ДО парсинга */
 							// std::cout << (*it)->getRequest(); /* тут печать распарсенного пришедшего реквеста */
-							// std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
+							std::cout << (*it)->getResponse(); /* тут печать сформированного ответа */
 						}
 						else
 							(*it)->setRecvBuf(buf,status);

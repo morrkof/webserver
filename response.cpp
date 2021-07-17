@@ -5,33 +5,29 @@ Response::Response(RequestParsing req, ConfigurationServer *server)
 _contentType("text/html"), _responseLen(0), _parsedReq(req), _server(server)
 {
 	bool is_server = false;
-	_location = _server->getLocationVec()[0];
+	if (_server->getLocationVec().size())
+		_location = _server->getLocationVec()[0];
+	else
+		_location = generateLocation();
 	for (std::vector<location>::iterator it = _server->getLocationVec().begin(); it != _server->getLocationVec().end(); ++it)
 	{
-		if (_server->getLocationVec().size())
-			_location = _server->getLocationVec()[0];
-		else
-			_location = generateLocation();
-		for (std::vector<location>::iterator it = _server->getLocationVec().begin(); it != _server->getLocationVec().end(); ++it)
-		{
-			if (_parsedReq.getLocation() == (*it).route)
-				_location = (*it);
-		}
-		_hostname = _parsedReq.getMapHeaders()["Host"].substr(0, _parsedReq.getMapHeaders()["Host"].find(':'));
-		for (std::vector<std::string>::iterator it = _server->getServerNameVec().begin(); it != _server->getServerNameVec().end(); ++it)
-		{
-			if (_hostname == (*it))
-				is_server = true;
-		}
-		if (is_server)
-			chooseMethod(); 
-		else
-		{
-			_errCode = 404;
-			_errCodeStr = "404 Not Found";
-			_contentType = "text/html";
-			generateResponse();
-		}
+		if (_parsedReq.getLocation() == (*it).route)
+			_location = (*it);
+	}
+	_hostname = _parsedReq.getMapHeaders()["Host"].substr(0, _parsedReq.getMapHeaders()["Host"].find(':'));
+	for (std::vector<std::string>::iterator it = _server->getServerNameVec().begin(); it != _server->getServerNameVec().end(); ++it)
+	{
+		if (_hostname == (*it))
+			is_server = true;
+	}
+	if (is_server)
+		chooseMethod(); 
+	else
+	{
+		_errCode = 404;
+		_errCodeStr = "404 Not Found";
+		_contentType = "text/html";
+		generateResponse();
 	}
 }
 
@@ -102,9 +98,9 @@ void		Response::methodGetFormBody() {
 	}
 	else
 	{	
-		if (_parsedReq.getLocation() == "/") 
+		if (_parsedReq.getLocation() == _location.route) 
 		{	
-			if (_server->getIndexVec()[0].find(".php") != std::string::npos)
+			if (_location.try_files[0].find(".php") != std::string::npos)
 			{
 				if (!_location.fastcgi_pass.size())
 				{
@@ -112,9 +108,9 @@ void		Response::methodGetFormBody() {
 					_errCodeStr = "502 Bad Gateway";
 				}
 				else
-					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + "/" + _server->getIndexVec()[0], "");
+					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _location.route + "/" + _location.try_files[0], "");
 			}
-			else if (generateBody((_server->getRoot() + "/" + _server->getIndexVec()[0]).c_str()) == 1)
+			else if (generateBody((_server->getRoot() + _location.route + "/" + _location.try_files[0]).c_str()) == 1)
 			{
 				_errCode = 404;
 				_errCodeStr = "404 Not Found";
@@ -137,7 +133,7 @@ void		Response::methodGetFormBody() {
 						params = _parsedReq.getLocation().substr(i+5, _parsedReq.getLocation().length()-i-5);
 					_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + "/" + _server->getIndexVec()[0], params);
 				}
-			}												
+			}
 			else if (generateBody((_server->getRoot() + _parsedReq.getLocation()).c_str()) == 1) 
 			{
 				_errCode = 404;
@@ -254,9 +250,14 @@ void Response::methodDelete()
 
 std::string	Response::generateResponse() 
 {
-	if (_errCode != 200)
+	if ((_errCode != 200 && _errCode != 404) || (_errCode == 404 && !_server->getErrorPage().size()))
 		_body = CatGeneratePage(_errCode);
-
+	if (_errCode == 404 && _server->getErrorPage().size())
+	{
+		if(generateBody((_server->getRoot() + "/" + _server->getErrorPage()).c_str()) == 1)
+			_body = CatGeneratePage(_errCode);
+	}
+	
 	_response.append(_version);
 	_response.append(" ");
 	_response.append(_errCodeStr);
