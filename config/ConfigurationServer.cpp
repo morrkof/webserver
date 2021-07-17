@@ -37,6 +37,7 @@ ConfigurationServer &ConfigurationServer::operator=(const ConfigurationServer &c
     this->locationVec = config.locationVec;
     this->indexVec = config.indexVec;
     this->returnAddr = config.returnAddr;
+    this->errorPage = config.errorPage;
 
     return *this;
 }
@@ -87,6 +88,11 @@ void    ConfigurationServer::setConfig(ConfigurationFile *config)
     this->config = config;
 }
 
+void    ConfigurationServer::setErrorPage(std::string page)
+{
+    this->errorPage = page;
+}
+
 std::vector<t_listen>      &ConfigurationServer::getListenVec()
 {
     return this->listenVec;
@@ -100,6 +106,11 @@ std::vector<std::string>    &ConfigurationServer::getServerNameVec()
 std::string     ConfigurationServer::getRoot()
 {
     return this->root;
+}
+
+std::string     ConfigurationServer::getErrorPage()
+{
+    return this->errorPage;
 }
 
 std::vector<location>      &ConfigurationServer::getLocationVec()
@@ -168,7 +179,6 @@ void    ConfigurationServer::parseListen(std::vector<std::string> &line)
     if (line[line.size() - 1] != ";" && *(line[line.size() - 1].end() - 1) != ';')
     {
         throw ConfigurationServer::ServerParserException();
-        exit(SYNTAX_ERROR);
     }
 
     t_listen  currentListen;
@@ -180,7 +190,6 @@ void    ConfigurationServer::parseListen(std::vector<std::string> &line)
     while (it != itE && *it != ':')
         it++;
     
-
     if (it != itE)
     {
         std::string host;
@@ -193,7 +202,6 @@ void    ConfigurationServer::parseListen(std::vector<std::string> &line)
         if (possiblePort < 1 || possiblePort > 65535 || !(this->checkPortsTaken(possiblePort)))
         {
             throw ConfigurationServer::ServerPortException();
-            exit (SYNTAX_ERROR);
         }
         currentListen.port = possiblePort;
     }
@@ -203,19 +211,17 @@ void    ConfigurationServer::parseListen(std::vector<std::string> &line)
         if (possiblePort < 1 || possiblePort > 65535 || !(this->checkPortsTaken(possiblePort)))
         {
             throw ConfigurationServer::ServerPortException();
-            exit (SYNTAX_ERROR);
         }
         currentListen.port = possiblePort;
     }
     this->addListen(currentListen);
 }
 
-void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
+void    ConfigurationServer::parseErrorPage(std::vector<std::string> &line)
 {
     if (line.size() == 1)
     {
-        throw ConfigurationServer::ServerNameException();
-        exit(SYNTAX_ERROR);
+        throw ConfigurationServer::ServerIndexException();
     }
     for (unsigned long i = 1; i < line.size(); i++)
     {
@@ -232,7 +238,33 @@ void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
             else
             {
                 throw ConfigurationServer::ServerParserException();
-                exit(SYNTAX_ERROR);
+            }
+        }
+        this->setErrorPage(line[i]);
+    }
+}
+
+void    ConfigurationServer::parseServerName(std::vector<std::string> &line)
+{
+    if (line.size() == 1)
+    {
+        throw ConfigurationServer::ServerNameException();
+    }
+    for (unsigned long i = 1; i < line.size(); i++)
+    {
+        if (i + 1 == line.size())
+        {
+            // ';' может быть через пробел, тогда просто игнорируем, если приклеена
+            // то обрезаем, иначе - ошибка синтаксиса, ибо ';'должна быть
+            if (line[i] == ";")
+                break;
+            else if (line[i][line[i].size() - 1] == ';')
+            {
+                line[i].assign(line[i].begin(), line[i].end() - 1);
+            }
+            else
+            {
+                throw ConfigurationServer::ServerParserException();
             }
         }
         this->addServerName(line[i]);
@@ -253,7 +285,6 @@ void    ConfigurationServer::parseRoot(std::vector<std::string> &line)
     else
     {
         throw ConfigurationServer::ServerParserException();
-        exit(SYNTAX_ERROR);
     }
 }
 
@@ -262,7 +293,6 @@ void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
     if (line.size() == 1)
     {
         throw ConfigurationServer::ServerIndexException();
-        exit(SYNTAX_ERROR);
     }
     for (unsigned long i = 1; i < line.size(); i++)
     {
@@ -279,7 +309,6 @@ void    ConfigurationServer::parseIndex(std::vector<std::string> &line)
             else
             {
                 throw ConfigurationServer::ServerParserException();
-                exit(SYNTAX_ERROR);
             }
         }
         this->addIndex(line[i]);
@@ -299,7 +328,6 @@ void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
         {
             throw ConfigurationServer::ServerParserException();
             delete newLocation;
-            exit(SYNTAX_ERROR);
         }
         newLocation->errorCode = -1;
         newLocation->fastcgi_include = "";
@@ -311,7 +339,6 @@ void    ConfigurationServer::parseLocation(std::vector<std::string> &line)
     else
     {
         throw ConfigurationServer::ServerParserException();
-        exit(SYNTAX_ERROR);
     }
 }
 
@@ -325,10 +352,8 @@ bool    ConfigurationServer::findFileInDirectory(location &lastLocation, std::st
     std::vector<std::string>::iterator it = lastLocation.try_files.begin();
     std::vector<std::string>::iterator itE = lastLocation.try_files.end();
 
-    std::cout << std::endl;
     while (it != itE)
     {
-        std::cout << "Comparing |" << fileName << "| |" << *it << "|" << std::endl;
         if (*it == fileName)
             return true;
         it++;
@@ -352,7 +377,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         else
         {
             throw ConfigurationServer::ServerParserException();
-            exit(SYNTAX_ERROR);
         }
     }
     else if (line[0] == "root")
@@ -360,7 +384,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         if (line.size() > 3)
         {
             throw ConfigurationServer::ServerParserException();
-            exit(SYNTAX_ERROR);
         }
         for (unsigned long i = 1; i < line.size(); i++)
         {
@@ -377,7 +400,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                 else
                 {
                     throw ConfigurationServer::ServerParserException();
-                    exit(SYNTAX_ERROR);
                 }
             }
             lastLocation.root = line[1];
@@ -388,7 +410,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         if (line.size() > 3)
         {
             throw ConfigurationServer::ServerParserException();
-            exit(SYNTAX_ERROR);
         }
         for (unsigned long i = 1; i < line.size(); i++)
         {
@@ -405,7 +426,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                 else
                 {
                     throw ConfigurationServer::ServerParserException();
-                    exit(SYNTAX_ERROR);
                 }
             }
             lastLocation.try_files.insert(lastLocation.try_files.begin(), line[i]);
@@ -432,14 +452,12 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                     else
                     {
                         throw ConfigurationServer::ServerParserException();
-                        exit(SYNTAX_ERROR);
                     }
                     break;
                 }
                 else
                 {
                     throw ConfigurationServer::ServerParserException();
-                    exit(SYNTAX_ERROR);
                 }
             }
             lastLocation.try_files.push_back(line[1]);
@@ -467,7 +485,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                 else
                 {
                     throw ConfigurationServer::ServerParserException();
-                    exit(SYNTAX_ERROR);
                 }
             }
             lastLocation.fastcgi_include = line[i];
@@ -478,7 +495,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         if (line.size() > 3)
         {
             throw ConfigurationServer::ServerParserException();
-            exit(SYNTAX_ERROR);
         }
         for (unsigned long i = 1; i < line.size(); i++)
         {
@@ -495,7 +511,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                 else
                 {
                     throw ConfigurationServer::ServerParserException();
-                    exit(SYNTAX_ERROR);     
                 }
             }
             lastLocation.fastcgi_pass = line[i];
@@ -506,7 +521,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         if (line.size() < 2 || (line.size() == 2 && line[1] == ";" ))
         {
             throw ConfigurationServer::ServerParserException();
-            exit(SYNTAX_ERROR);
         }
         else
         {
@@ -525,12 +539,10 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
                     else if (line[i] != "GET" && line[i] != "PUT" && line[i] != "POST" && line[i] != "DELETE")
                     {
                         throw ConfigurationServer::ServerParserException();
-                        exit(SYNTAX_ERROR);
                     }
                     else
                     {
                         throw ConfigurationServer::ServerParserException();
-                        exit(SYNTAX_ERROR);     
                     }
                 }
                 lastLocation.methods.insert(line[i]);
@@ -542,7 +554,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
         if (line.size() < 2)
         {
             throw ConfigurationServer::ServerParserException();
-            exit(SYNTAX_ERROR); 
         }
         else
         {
@@ -550,7 +561,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
             if (size <= 0)
             {
                 throw ConfigurationServer::ServerParserException();
-                exit(SYNTAX_ERROR); 
             }
             lastLocation.client_body_size = size;
         }
@@ -558,7 +568,6 @@ void    ConfigurationServer::updateLocation(std::vector<std::string> &line)
     else
     {
         throw ConfigurationServer::ServerParserException();
-        exit(SYNTAX_ERROR);
     }
         
 }
@@ -573,7 +582,6 @@ void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
         if (errorCode < 1 || errorCode > 1000)
         {
             throw ConfigurationServer::ServerParserException();
-            exit (SYNTAX_ERROR);
         }
         this->returnAddr.errorCode = errorCode;
         if (line[2][line[2].size() - 1] == ';')
@@ -583,7 +591,6 @@ void    ConfigurationServer::parseReturn(std::vector<std::string> &line)
     else
     {
         throw ConfigurationServer::ServerParserException();
-        exit(SYNTAX_ERROR);
     }
 }
 
@@ -592,7 +599,6 @@ void    ConfigurationServer::parseMethods(std::vector<std::string> &line)
     if (line.size() < 2 || (line.size() == 2 && line[1] == ";" ))
     {
         throw ConfigurationServer::ServerParserException();
-        exit(SYNTAX_ERROR);
     }
     else
     {
@@ -611,12 +617,10 @@ void    ConfigurationServer::parseMethods(std::vector<std::string> &line)
                 else if (line[i] != "GET" && line[i] != "PUT" && line[i] != "POST" && line[i] != "DELETE")
                 {
                     throw ConfigurationServer::ServerParserException();
-                    exit(SYNTAX_ERROR);
                 }
                 else
                 {
                     throw ConfigurationServer::ServerParserException();
-                    exit(SYNTAX_ERROR);     
                 }
             }
             this->methods.insert(line[i]);
@@ -630,7 +634,6 @@ void	ConfigurationServer::checkFilledServer()
 			this->root == "" || this->listenVec.size() == 0)
 	{
 		throw ConfigurationServer::ServerNotEnoughParansException();
-		exit(SYNTAX_ERROR);
 	}
 }
 
@@ -696,6 +699,7 @@ std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
         }
         os << "]" << std::endl;
     }
+    os << "error_page: [" << server.getErrorPage() << "]" << std::endl;
     os << "methods: [";
     std::set<std::string> methodsSet = server.getMethods();
     std::set<std::string>::iterator it = methodsSet.begin();

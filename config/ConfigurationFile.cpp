@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/17 13:18:14 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/17 19:06:54 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ void    ConfigurationFile::parseFile(std::string filename)
 	if (filename.find(".conf") == std::string::npos)
 	{
 		throw ConfigurationFile::ConfigFileFormatException();
-		exit(FILE_ERROR);
 	}
     
     std::ifstream   config;
@@ -66,7 +65,6 @@ void    ConfigurationFile::parseFile(std::string filename)
     if (!(config.is_open()))
     {
         throw ConfigurationFile::ConfigFileNotFoundException();
-        exit(FILE_ERROR);
     }
     
     std::string         line; 
@@ -115,12 +113,10 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     if (!map.checkBrackets())
     {
         throw ConfigurationFile::ConfigFileParserException();
-        exit(SYNTAX_ERROR);
     }
     if (!map.checkBlockName())
     {
         throw ConfigurationFile::ConfigFileParserException();
-        exit(SYNTAX_ERROR);
     }
     
     std::vector<std::string>::iterator  it = block.begin();
@@ -129,21 +125,31 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     ConfigurationServer *server = new ConfigurationServer();
     server->setConfig(this);
 
-    while (it != itEnd)
+    try
     {
-        std::istringstream iss(*it);
-        std::vector<std::string> lineParts((std::istream_iterator<std::string>(iss)),
-            std::istream_iterator<std::string>());
-        if (map.getBlockName() == "server")
+        while (it != itEnd)
         {
-            this->parseBlockLine(lineParts, server);
+            std::istringstream iss(*it);
+            std::vector<std::string> lineParts((std::istream_iterator<std::string>(iss)),
+                std::istream_iterator<std::string>());
+            if (map.getBlockName() == "server")
+            {
+                this->parseBlockLine(lineParts, server);
+            }
+            it++;
         }
-        it++;
-    }
 
-	server->checkFilledServer();
-    this->addServer(server);
-    delete server;
+        server->checkFilledServer();
+        this->addServer(server);
+        delete server;
+    }
+    catch (std::exception &e)
+    {
+        delete server;
+        delete this;
+        std::cerr << e.what() << std::endl;
+        exit(-1);
+    }
 }
 
 bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
@@ -176,6 +182,8 @@ void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, Configu
         server->updateLocation(line);
     else if (line[0] == "index")
         server->parseIndex(line);
+    else if (line[0] == "error_page")
+        server->parseErrorPage(line);
     else if (line[0] == "location")
         server->parseLocation(line);
     else if (line[0] == "return")
@@ -202,7 +210,6 @@ void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, Configu
     {
         std::cout << "Error config line: |" << line[0] << "|" << std::endl;
         throw ConfigurationFile::ConfigFileParserException();
-        exit(SYNTAX_ERROR);
     }
     
 }

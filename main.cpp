@@ -28,8 +28,10 @@ ConfigurationFile*	getConfig(std::string	fileName)
 	catch (std::exception &e)
 	{
 		std::cout << e.what() << std::endl;
+		delete configParser;
+		exit(-1);
 	}
-	
+
 	std::vector<ConfigurationServer> *servers = configParser->getServers();
 	std::cout << "____________________________________________________________" << std::endl;
 	std::cout << "Got servers: " << servers->size() << std::endl;

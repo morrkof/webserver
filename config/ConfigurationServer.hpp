@@ -54,6 +54,7 @@ class ConfigurationServer
         bool                                autoIndex;
         returnAddress                       returnAddr;
         ConfigurationFile                   *config;
+        std::string                         errorPage;
     
     public:
         ConfigurationServer();
@@ -71,6 +72,7 @@ class ConfigurationServer
         void    addReturnAddress(returnAddress returnAddr);
         void    addIndex(std::string index);
         void    setConfig(ConfigurationFile *config);
+        void    setErrorPage(std::string page);
 
         std::vector<t_listen>         &getListenVec();
         std::vector<std::string>    &getServerNameVec();
@@ -81,6 +83,7 @@ class ConfigurationServer
         std::vector<std::string>    &getIndexVec();
         returnAddress               getReturnAddress();
         ConfigurationFile           *getServerConfig();
+        std::string                 getErrorPage();
 
         void    parseListen(std::vector<std::string> &line);
         void    parseServerName(std::vector<std::string> &line);
@@ -89,6 +92,7 @@ class ConfigurationServer
         void    parseLocation(std::vector<std::string> &line);
         void    parseReturn(std::vector<std::string> &line);
         void    parseMethods(std::vector<std::string> &line);
+        void    parseErrorPage(std::vector<std::string> &line);
         void    updateLocation(std::vector<std::string> &line);
 
 		void	checkFilledServer();
