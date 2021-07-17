@@ -187,7 +187,10 @@ void Response::methodPost()
 					}
 					else
 					{
-						_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(), _parsedReq.getBody());
+						if (_parsedReq.getLocation() == "/")
+							_body = cgi_process(_location.fastcgi_pass, (_server->getRoot() + "/" + _server->getIndexVec()[0]).c_str(), _parsedReq.getBody());
+						else
+							_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(), _parsedReq.getBody());
 						if (_body.size() == 0)
 						{
 							_errCode = 502;
