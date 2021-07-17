@@ -4,7 +4,7 @@ CONFIGSRC = ./config/ConfigurationFile.cpp ./config/ConfigurationServer.cpp \
 SRC = ./main.cpp $(CONFIGSRC) ./requestParsing.cpp ./response.cpp ./Websocket.cpp \
 	./AutoIndexPage.cpp
 OBJ = $(SRC:.cpp=.o)
-CFLAGS = -Wall -Wextra -Werror -std=c++98 #-g -D_GLIBCXX_DEBUG
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -g -D_GLIBCXX_DEBUG
 
 .PHONY: all clean fclean re
 
