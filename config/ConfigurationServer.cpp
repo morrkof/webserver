@@ -87,7 +87,7 @@ void    ConfigurationServer::setConfig(ConfigurationFile *config)
     this->config = config;
 }
 
-std::vector<t_listen>      ConfigurationServer::getListenVec()
+std::vector<t_listen>      &ConfigurationServer::getListenVec()
 {
     return this->listenVec;
 }
@@ -122,6 +122,38 @@ returnAddress            ConfigurationServer::getReturnAddress()
     return this->returnAddr;
 }
 
+ConfigurationFile           *ConfigurationServer::getServerConfig()
+{
+    return this->config;
+}
+
+bool    ConfigurationServer::checkPortsTaken(int possiblePort)
+{
+    std::vector<ConfigurationServer> *servers = this->config->getServers();
+    if (servers == NULL)
+        return (true);
+    
+    std::vector<ConfigurationServer>::iterator it = servers->begin();
+    std::vector<ConfigurationServer>::iterator itE = servers->end();
+
+    while (it != itE)
+    {
+        std::vector<t_listen> &listenVec = it->getListenVec();
+        
+        std::vector<t_listen>::iterator itListen = listenVec.begin();
+        std::vector<t_listen>::iterator itListenE = listenVec.end();
+        while (itListen != itListenE)
+        {
+            if (itListen->port == possiblePort)
+                return (false);
+            itListen++;
+        }
+
+        it++;
+    }
+    return (true);
+}
+
 void    ConfigurationServer::parseListen(std::vector<std::string> &line)
 {
     if (line[line.size() - 1] != ";" && *(line[line.size() - 1].end() - 1) != ';')
@@ -139,17 +171,17 @@ void    ConfigurationServer::parseListen(std::vector<std::string> &line)
     while (it != itE && *it != ':')
         it++;
     
+
     if (it != itE)
     {
         std::string host;
         host.assign(line[1].begin(), it);
         currentListen.host += host;
-
         it++;
         std::string port;
         port.assign(it, line[1].end());
         int possiblePort = std::atoi(port.c_str());
-        if (possiblePort < 1 || possiblePort > 65535)
+        if (possiblePort < 1 || possiblePort > 65535 || !(this->checkPortsTaken(possiblePort)))
         {
             throw ConfigurationServer::ServerPortException();
             exit (SYNTAX_ERROR);
@@ -159,7 +191,7 @@ void    ConfigurationServer::parseListen(std::vector<std::string> &line)
     else
     {
         int possiblePort = std::atoi(line[1].c_str());
-        if (possiblePort < 1 || possiblePort > 65535)
+        if (possiblePort < 1 || possiblePort > 65535 || !(this->checkPortsTaken(possiblePort)))
         {
             throw ConfigurationServer::ServerPortException();
             exit (SYNTAX_ERROR);
@@ -634,7 +666,7 @@ std::ostream &operator<<(std::ostream &os, ConfigurationServer &server)
     }
     os << "root: [" << server.getRoot() << "]" << std::endl;
     os << "PORTS: [";
-    std::vector<t_listen> listenVec = server.getListenVec();
+    std::vector<t_listen> &listenVec = server.getListenVec();
     for (unsigned long i = 0; i < listenVec.size(); i++)
     {
         os << listenVec[i].port;

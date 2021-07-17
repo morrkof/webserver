@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/15 08:56:00 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/17 13:09:48 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,8 @@ ConfigurationFile &ConfigurationFile::operator=(const ConfigurationFile &file)
 
 void    ConfigurationFile::addServer(ConfigurationServer *server)
 {
-    server->setConfig(this);
+    if (server->getServerConfig() == NULL)
+        server->setConfig(this);
     if (this->serverVec == NULL)
     {
         this->serverVec = new std::vector<ConfigurationServer>(1, *server);
@@ -126,6 +127,7 @@ void    ConfigurationFile::checkConfigBlock(MapConfigFile &map, std::vector<std:
     std::vector<std::string>::iterator  itEnd = block.end();
     
     ConfigurationServer *server = new ConfigurationServer();
+    server->setConfig(this);
 
     while (it != itEnd)
     {
@@ -161,7 +163,8 @@ bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
 }
 
 void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, ConfigurationServer *server)
-{    
+{
+    std::cout << "line: " << line[0] << std::endl;
     if (line[0] == "listen")
         server->parseListen(line);
     else if (line[0] == "server_name")

@@ -72,7 +72,7 @@ class ConfigurationServer
         void    addIndex(std::string index);
         void    setConfig(ConfigurationFile *config);
 
-        std::vector<t_listen>         getListenVec();
+        std::vector<t_listen>         &getListenVec();
         std::vector<std::string>    &getServerNameVec();
         std::string                 getRoot();
         std::vector<location>       &getLocationVec();
@@ -80,6 +80,7 @@ class ConfigurationServer
         std::set<std::string>       getMethods();
         std::vector<std::string>    &getIndexVec();
         returnAddress               getReturnAddress();
+        ConfigurationFile           *getServerConfig();
 
         void    parseListen(std::vector<std::string> &line);
         void    parseServerName(std::vector<std::string> &line);
@@ -92,6 +93,7 @@ class ConfigurationServer
 
 		void	checkFilledServer();
         bool    findFileInDirectory(location &lastLocation, std::string fileName);
+        bool    checkPortsTaken(int possiblePort);
 
         class ServerParserException : public std::exception
         {
