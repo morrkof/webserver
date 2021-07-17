@@ -129,6 +129,15 @@ ConfigurationFile           *ConfigurationServer::getServerConfig()
 
 bool    ConfigurationServer::checkPortsTaken(int possiblePort)
 {
+    if (this->listenVec.size() != 0)
+    {
+        for (unsigned long i = 0; i < this->listenVec.size(); i++)
+        {
+            if (this->listenVec[i].port == possiblePort)
+                return (false);
+        }
+    }
+
     std::vector<ConfigurationServer> *servers = this->config->getServers();
     if (servers == NULL)
         return (true);
