@@ -29,12 +29,12 @@ std::string	RequestParsing::getBody() const {return _body;}
 int		RequestParsing::chooseMethod() {
 	std::string	methodsAll[3] = {"GET", "POST", "DELETE"};
 	_method = _dataFull.substr(0, _dataFull.find(" "));
-	size_t		i = 0;
-	while (i < 3 && _method != methodsAll[i]) i++;
-	if (i == 3) {
-		// _errorMethodDoesntExist();
-		return 1;
-	}
+	// size_t		i = 0;
+	// while (i < 3 && _method != methodsAll[i]) i++;
+	// if (i == 3) {
+	// 	// _errorMethodDoesntExist();
+	// 	return 1;
+	// }
 	_posNext = _dataFull.find(" ") + 1; // _posNext now equals the first symbol of the location
 
 	// std::cout << std::endl << "chooseMethod" << std::endl;
