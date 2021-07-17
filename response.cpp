@@ -8,7 +8,6 @@ _contentType("text/html"), _responseLen(0), _parsedReq(req), _server(server)
 	_location = _server->getLocationVec()[0];
 	for (std::vector<location>::iterator it = _server->getLocationVec().begin(); it != _server->getLocationVec().end(); ++it)
 	{
-		bool is_server = false;
 		if (_server->getLocationVec().size())
 			_location = _server->getLocationVec()[0];
 		else
@@ -188,7 +187,10 @@ void Response::methodPost()
 					}
 					else
 					{
-						_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(), _parsedReq.getBody());
+						if (_parsedReq.getLocation() == "/")
+							_body = cgi_process(_location.fastcgi_pass, (_server->getRoot() + "/" + _server->getIndexVec()[0]).c_str(), _parsedReq.getBody());
+						else
+							_body = cgi_process(_location.fastcgi_pass, _server->getRoot() + _parsedReq.getLocation(), _parsedReq.getBody());
 						if (_body.size() == 0)
 						{
 							_errCode = 502;
@@ -230,11 +232,13 @@ void Response::methodDelete()
 	{
 		_csRoot = _server->getRoot();
 		std::string		fileToRemove = _csRoot + _parsedReq.getLocation();
-		if (remove(fileToRemove.c_str()) != 0) {
-			_errCode = 204;
-			_errCodeStr = "204 No Content";
+		if (remove(fileToRemove.c_str()) != 0) 
+		{
+			_errCode = 404;
+			_errCodeStr = "404 Not Found";
 		}
-		else {
+		else 
+		{
 			_errCode = 202;
 			_errCodeStr = "202 Accepted";
 		}
