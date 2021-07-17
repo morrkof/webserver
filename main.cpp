@@ -21,7 +21,15 @@ ConfigurationFile*	getConfig(std::string	fileName)
 {
 	ConfigurationFile	*configParser = new ConfigurationFile();
 
-	configParser->parseFile(fileName);
+	try
+	{
+		configParser->parseFile(fileName);
+	}
+	catch (std::exception &e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+	
 	std::vector<ConfigurationServer> *servers = configParser->getServers();
 	std::cout << "____________________________________________________________" << std::endl;
 	std::cout << "Got servers: " << servers->size() << std::endl;
