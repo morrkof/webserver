@@ -6,7 +6,7 @@
 /*   By: bbelen <bbelen@21-school.ru>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/05 15:51:41 by bbelen            #+#    #+#             */
-/*   Updated: 2021/07/17 13:09:48 by bbelen           ###   ########.fr       */
+/*   Updated: 2021/07/17 13:18:14 by bbelen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,7 +164,6 @@ bool    ConfigurationFile::lineOnlySpacesOrTabs(std::string line)
 
 void    ConfigurationFile::parseBlockLine(std::vector<std::string> line, ConfigurationServer *server)
 {
-    std::cout << "line: " << line[0] << std::endl;
     if (line[0] == "listen")
         server->parseListen(line);
     else if (line[0] == "server_name")
